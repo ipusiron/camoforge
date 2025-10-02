@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CamoForge — Camouflage Pattern Generator</title>
+
+  <!-- Security Headers (meta tags for client-side enforcement) -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <!-- CSP: Allow inline styles and scripts (required for this app), but restrict other resources -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'self';" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <meta name="description" content="CamoForge: Web-based generator for camouflage patterns — create, experiment, and study how designs blend into different environments. Educational and research use only.">
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="CamoForge — Camouflage Pattern Generator" />
+  <meta property="og:description" content="Educational tool for generating and analyzing camouflage patterns with color vision simulation." />
+  <meta property="og:url" content="https://ipusiron.github.io/camoforge/" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <h1>CamoForge</h1>
+      <p class="subtitle">Camouflage Designs Generator — カモフラージュデザイン生成ツール</p>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+        <span class="theme-icon">☀️</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="generate">パターン生成</button>
+      <button class="tab-btn" data-tab="environment">環境適合性チェック</button>
+      <button class="tab-btn" data-tab="education">座学</button>
+    </nav>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Tab 1: Pattern Generation -->
+      <div id="tab-generate" class="tab-pane active">
+        <aside class="sidebar">
+          <section class="panel controls">
+            <h2>生成パラメーター</h2>
+
+            <label class="field">
+              パターンタイプ
+              <select id="patternType" class="input">
+                <option value="military">軍用迷彩風（ノイズ）</option>
+                <option value="cable">ケーブル群（ストライプ）</option>
+                <option value="hardware">ハードウェアパネル（グリッド）</option>
+                <option value="black-matte">漆黒マット（ビネット）</option>
+                <option value="custom">カスタムノイズ</option>
+              </select>
+            </label>
+
+            <label class="field">
+              カラープリセット
+              <select id="palettePreset" class="input">
+                <option value="">--- カスタム入力 ---</option>
+              </select>
+            </label>
+
+            <div id="paletteCustom" class="palette-input-group">
+              <label class="field">
+                カスタムカラー（カンマ区切り）
+                <input id="palette" class="input" type="text" value="#0b0b0b,#1a1a1a,#2b2b2b">
+              </label>
+              <div id="palettePreview" class="palette-preview"></div>
+            </div>
+
+            <div class="row">
+              <label class="field range-field">
+                <span class="field-label">スケール</span>
+                <input id="scale" type="range" min="8" max="300" value="60" class="input range">
+                <span class="range-value" id="scaleValue">60</span>
+              </label>
+              <label class="field range-field">
+                <span class="field-label">コントラスト</span>
+                <input id="contrast" type="range" min="0.2" max="2.5" step="0.01" value="1.0" class="input range">
+                <span class="range-value" id="contrastValue">1.0</span>
+              </label>
+              <label class="field range-field">
+                <span class="field-label">明るさ</span>
+                <input id="brightness" type="range" min="-1" max="1" step="0.01" value="-0.2" class="input range">
+                <span class="range-value" id="brightnessValue">-0.2</span>
+              </label>
+            </div>
+
+            <div class="buttons">
+              <button id="regen" class="btn btn-primary">再生成</button>
+              <button id="randomize" class="btn btn-random">🎲 ランダム生成</button>
+            </div>
+          </section>
+        </aside>
+
+        <section class="main-content">
+          <div class="panel preview">
+            <h2>プレビュー</h2>
+            <div class="canvas-wrap">
+              <canvas id="patternCanvas" width="1280" height="720" aria-label="pattern preview"></canvas>
+            </div>
+
+            <div class="preview-footer">
+              <button id="export" class="btn btn-export">PNG エクスポート</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Tab 2: Environment Check -->
+      <div id="tab-environment" class="tab-pane">
+        <aside class="sidebar">
+          <section class="panel controls">
+            <h2>環境画像設定</h2>
+
+            <label class="field upload-field">
+              環境画像をアップロード
+              <input id="envUpload" type="file" accept="image/*" class="input-file">
+            </label>
+
+            <div class="overlay-controls">
+              <label class="field checkbox-field">
+                <input id="showOverlay" type="checkbox" checked>
+                <span>パターンを重ねる</span>
+              </label>
+              <label class="field range-field" id="alphaControl">
+                <span class="field-label">重ね合わせ透明度</span>
+                <input id="overlayAlpha" type="range" min="0" max="1" step="0.01" value="0.7" class="input range">
+                <span class="range-value" id="alphaValue">0.7</span>
+              </label>
+            </div>
+
+            <div class="info-box">
+              <h3>使い方</h3>
+              <ol>
+                <li>環境画像（森林、オフィス、都市など）をアップロード</li>
+                <li>「パターン生成」タブで作成したパターンが自動的に重ねられます</li>
+                <li>透明度を調整して視覚的な適合性を確認</li>
+              </ol>
+            </div>
+
+            <div class="note">
+              <strong>📌 補足：</strong> 可視評価は参考値です。NIR・サーマル・LiDAR等のセンサーは別途評価が必要です。
+            </div>
+          </section>
+        </aside>
+
+        <section class="main-content">
+          <div class="panel preview">
+            <h2>環境適合性プレビュー</h2>
+            <div class="canvas-wrap comparison-wrap">
+              <canvas id="envOnlyCanvas" width="1280" height="720" aria-label="environment only"></canvas>
+              <canvas id="compositeCanvas" width="1280" height="720" aria-label="composite preview"></canvas>
+              <div class="comparison-slider">
+                <div class="slider-line"></div>
+                <div class="slider-handle">
+                  <div class="slider-handle-icon">⬌</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="comparison-controls">
+              <label class="field checkbox-field">
+                <input id="enableComparison" type="checkbox" checked>
+                <span>比較スライダーを有効化</span>
+              </label>
+
+              <label class="field">
+                色覚シミュレーション
+                <select id="colorVisionMode" class="input">
+                  <option value="normal">通常視覚</option>
+                  <option value="protanopia">1型色覚（赤弱 / Protanopia）</option>
+                  <option value="deuteranopia">2型色覚（緑弱 / Deuteranopia）</option>
+                  <option value="tritanopia">3型色覚（青弱 / Tritanopia）</option>
+                  <option value="monochrome">モノクロ（全色盲）</option>
+                </select>
+              </label>
+
+              <label class="field checkbox-field">
+                <input id="enableEdgeDetection" type="checkbox">
+                <span>エッジ検出フィルター（視覚的注目点を可視化）</span>
+              </label>
+            </div>
+
+            <div class="preview-footer">
+              <button id="exportComposite" class="btn btn-export">合成画像をエクスポート</button>
+              <div class="preview-note">
+                環境画像に迷彩パターンを重ねた状態を確認できます。スライダーをドラッグして比較してください。
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Tab 3: Education -->
+      <div id="tab-education" class="tab-pane">
+        <div class="education-content">
+          <section class="panel education-panel">
+            <h2>迷彩パターンの基礎知識</h2>
+
+            <div class="education-section">
+              <h3>🎯 迷彩の原理</h3>
+              <p>迷彩（カモフラージュ）の本質は <strong>「背景との一体化」</strong> にあります。自然環境では葉や土壌のランダム性に合わせ、人工環境ではケーブルやパネルの見慣れたパターンに合わせることで、視覚的検出を困難にします。</p>
+            </div>
+
+            <div class="education-section">
+              <h3>📚 歴史的背景</h3>
+              <p><strong>第一次世界大戦</strong>：軍事迷彩の本格的な導入が始まりました。それまでの鮮やかな軍服から、戦場環境に溶け込む色調へと変化しました。</p>
+              <p><strong>自然界の擬態研究</strong>：カメレオンや昆虫の擬態メカニズムが、軍事・産業デザインに応用されてきました。</p>
+            </div>
+
+            <div class="education-section">
+              <h3>🔬 現代のトレンド</h3>
+              <ul>
+                <li><strong>都市迷彩</strong>：コンクリート、ガラス、金属を想定したグレー系パターン</li>
+                <li><strong>デジタル迷彩（MARPAT等）</strong>：ピクセル化された細かな矩形で視覚認識を錯覚させる</li>
+                <li><strong>マルチスケール迷彩（MultiCam）</strong>：複数の環境で機能する全地形型</li>
+                <li><strong>アート・デザインへの応用</strong>：ファッション、グラフィックデザイン、建築への展開</li>
+              </ul>
+            </div>
+
+            <div class="education-section">
+              <h3>🌍 利用シーン</h3>
+              <ul>
+                <li><strong>軍事</strong>：戦闘服、車両、施設の視覚的隠蔽</li>
+                <li><strong>狩猟</strong>：野生動物に気づかれないための装備</li>
+                <li><strong>産業デザイン</strong>：目立たせたくない設備の背景同化</li>
+                <li><strong>舞台芸術</strong>：背景と一体化した演出効果</li>
+                <li><strong>教育</strong>：視覚認識・検出の原理学習</li>
+              </ul>
+            </div>
+
+            <div class="education-section">
+              <h3>💻 物理とサイバーの関係</h3>
+              <p><strong>物理迷彩 = 視覚的ノイズ</strong>：背景パターンに溶け込ませることで「異物」としての認識を弱める</p>
+              <p><strong>サイバー迷彩 = デジタル難読化</strong>：コード難読化、トラフィック偽装、トラッキング回避など、デジタル領域でも「背景に紛れる」概念が応用されています</p>
+            </div>
+
+            <div class="education-section">
+              <h3>♿ ヒューマンファクター</h3>
+              <p><strong>色覚多様性への配慮</strong>：色覚異常を持つ人には、色の違いよりもコントラスト・形状の違いが重要になります</p>
+              <p><strong>UI設計における可読性</strong>：迷彩は「見えにくくする」技術ですが、安全標識やUIでは逆に「確実に見せる」設計が求められます。両者のバランス理解が重要です</p>
+            </div>
+
+            <div class="education-section">
+              <h3>⚙️ 実機デバイスにおける考察</h3>
+              <p><strong>小型コンピューター（Raspberry Pi等）</strong>：緑色基板と黒いチップが目立つ。漆黒パターンで覆っても、端子やLEDが強い人工シグナルとして残る</p>
+              <p><strong>USBデバイス</strong>：ケーブル群に馴染ませても、突起物としてのシルエットは消せない</p>
+              <p><strong>無線AP（不正AP想定）</strong>：天井グリッドパターンと重ねると目立ちにくいが、LED点滅や通信挙動が決定的な発見手がかりとなる</p>
+              <p><strong>ネットワーク機器</strong>：ハードウェアパネルパターンでラックに馴染んでも、ポート占有やLED点灯で容易に見破られる</p>
+            </div>
+
+            <div class="education-section warning">
+              <h3>⚠️ 教育的まとめ</h3>
+              <p><strong>人工物は人工物らしい手がかりを必ず残す</strong>：端子、LED、規則的な配列は自然環境には存在しません。</p>
+              <p><strong>CamoForgeの意義</strong>：</p>
+              <ul>
+                <li>「なぜ人工物が目立つのか」を可視化して学べる</li>
+                <li>「どのように馴染んで見えるのか」を実験できる</li>
+                <li>視覚だけでなく、センサー・通信挙動を総合して検出する必要性を理解できる</li>
+              </ul>
+              <p>このように、迷彩パターンは「隠す」ためではなく <strong>「検出・認識を教育する教材」</strong> として活用できます。</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      🔗 GitHubリポジトリはこちら（ <a href="https://github.com/ipusiron/camoforge" target="_blank" rel="noopener noreferrer">ipusiron/camoforge</a> ）
+    </div>
+  </footer>
+
+  <script src="js/perlin.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

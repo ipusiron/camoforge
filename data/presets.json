@@ -1,0 +1,263 @@
+{
+  "version": "1.0",
+  "categories": {
+    "cable_bundles": [
+      {
+        "id": "cable_dark_neutral",
+        "label": "Cable — Dark Neutral",
+        "colors": ["#0b0b0b", "#191919", "#262626", "#333333"]
+      },
+      {
+        "id": "cable_graphite",
+        "label": "Cable — Graphite",
+        "colors": ["#0d0f12", "#1a1d21", "#2a2e33", "#3a3f45"]
+      },
+      {
+        "id": "cable_charcoal_mix",
+        "label": "Cable — Charcoal Mix",
+        "colors": ["#111111", "#1f1f1f", "#2b2b2b", "#3c3c3c"]
+      },
+      {
+        "id": "cable_slate_gray",
+        "label": "Cable — Slate Gray",
+        "colors": ["#1a1c20", "#2b2f36", "#3c424b", "#4b525c"]
+      },
+      {
+        "id": "cable_black_brown",
+        "label": "Cable — Black/Brown",
+        "colors": ["#0f0e0c", "#1e1a16", "#2b2621", "#3a342d"]
+      },
+      {
+        "id": "cable_offwhite_bundle",
+        "label": "Cable — Off-White Bundle",
+        "colors": ["#e6e6e6", "#d9d9d9", "#c9c9c9", "#bdbdbd"]
+      },
+      {
+        "id": "cable_warm_gray",
+        "label": "Cable — Warm Gray",
+        "colors": ["#1b1918", "#2a2725", "#373330", "#443f3b"]
+      },
+      {
+        "id": "cable_cool_gray",
+        "label": "Cable — Cool Gray",
+        "colors": ["#13161a", "#21262c", "#2f363e", "#3d4650"]
+      },
+      {
+        "id": "cable_midnight_bluehint",
+        "label": "Cable — Midnight (Blue-hint)",
+        "colors": ["#0c0f14", "#141a21", "#1d2630", "#283341"]
+      },
+      {
+        "id": "cable_beige_office",
+        "label": "Cable — Beige Office",
+        "colors": ["#d7d2c9", "#c8c3b9", "#b9b4aa", "#aaa69c"]
+      }
+    ],
+    "hardware_panels": [
+      {
+        "id": "panel_gunmetal",
+        "label": "Panel — Gunmetal",
+        "colors": ["#0f1113", "#191c20", "#24292e", "#2f353c"]
+      },
+      {
+        "id": "panel_anthracite",
+        "label": "Panel — Anthracite",
+        "colors": ["#111214", "#1b1d20", "#25282c", "#2f3338"]
+      },
+      {
+        "id": "panel_server_rack",
+        "label": "Panel — Server Rack",
+        "colors": ["#0e1012", "#171a1d", "#20252a", "#2a3036"]
+      },
+      {
+        "id": "panel_brushed_steel",
+        "label": "Panel — Brushed Steel",
+        "colors": ["#b7bcc1", "#a9afb5", "#9ba2a9", "#8e969e"]
+      },
+      {
+        "id": "panel_mat_black_mix",
+        "label": "Panel — Matte Black Mix",
+        "colors": ["#0b0b0c", "#141516", "#1d1f21", "#26292c"]
+      },
+      {
+        "id": "panel_beige_legacy",
+        "label": "Panel — Beige Legacy",
+        "colors": ["#d9d3c8", "#cdc6b8", "#c1b9a8", "#b5ad9a"]
+      },
+      {
+        "id": "panel_olive_drab_industrial",
+        "label": "Panel — Olive Drab Industrial",
+        "colors": ["#2a2f26", "#3a4036", "#4a5046", "#5a6056"]
+      },
+      {
+        "id": "panel_blue_gray_ops",
+        "label": "Panel — Blue-Gray Ops",
+        "colors": ["#1a2128", "#242d36", "#2f3944", "#3a4552"]
+      },
+      {
+        "id": "panel_graphite_warm",
+        "label": "Panel — Graphite Warm",
+        "colors": ["#1a1918", "#232220", "#2d2b28", "#373430"]
+      },
+      {
+        "id": "panel_dark_sand",
+        "label": "Panel — Dark Sand",
+        "colors": ["#b1a894", "#a49b87", "#968d79", "#887f6c"]
+      }
+    ],
+    "office_backgrounds": [
+      {
+        "id": "wall_plain_white",
+        "label": "Wall — Plain White",
+        "colors": ["#f9f9f9", "#f0f0f0", "#e5e5e5", "#dbdbdb"]
+      },
+      {
+        "id": "wall_offwhite_gray",
+        "label": "Wall — Off-white Gray",
+        "colors": ["#ececec", "#dfdfdf", "#d1d1d1", "#c3c3c3"]
+      },
+      {
+        "id": "wood_desk_light",
+        "label": "Wood — Desk Light Oak",
+        "colors": ["#e3d3b3", "#d6c6a6", "#c9b999", "#bcac8d"]
+      },
+      {
+        "id": "wood_desk_dark",
+        "label": "Wood — Desk Dark Walnut",
+        "colors": ["#3b2a20", "#4a362a", "#5a4234", "#6a4e3e"]
+      },
+      {
+        "id": "carpet_gray",
+        "label": "Carpet — Standard Gray",
+        "colors": ["#7a7d7f", "#6c6f72", "#5e6164", "#505355"]
+      },
+      {
+        "id": "carpet_blue_tint",
+        "label": "Carpet — Blue Tint",
+        "colors": ["#76818a", "#69747d", "#5c6770", "#4f5a63"]
+      },
+      {
+        "id": "ceiling_white_grid",
+        "label": "Ceiling — White Grid",
+        "colors": ["#f2f2f2", "#e8e8e8", "#dedede", "#d4d4d4"]
+      },
+      {
+        "id": "ceiling_offwhite_grid",
+        "label": "Ceiling — Offwhite Grid",
+        "colors": ["#e9e6e2", "#dedbd7", "#d3d0cc", "#c8c5c1"]
+      },
+      {
+        "id": "wall_light_beige",
+        "label": "Wall — Light Beige",
+        "colors": ["#f0e8da", "#e5dccd", "#dad1c0", "#cec5b3"]
+      },
+      {
+        "id": "wood_medium_cherry",
+        "label": "Wood — Medium Cherry",
+        "colors": ["#723c28", "#814530", "#904e38", "#9f573f"]
+      }
+    ],
+    "military_camouflage": [
+      {
+        "id": "woodland_bdu",
+        "label": "Woodland BDU (米軍森林)",
+        "colors": ["#3d4a2c", "#5a6c3a", "#6b4423", "#2c3d1f"]
+      },
+      {
+        "id": "marpat_woodland",
+        "label": "MARPAT Woodland (海兵隊森林)",
+        "colors": ["#4a5438", "#6b5d3f", "#2d3a24", "#5c6847"]
+      },
+      {
+        "id": "marpat_desert",
+        "label": "MARPAT Desert (海兵隊砂漠)",
+        "colors": ["#c9b896", "#a89674", "#8c7960", "#d4c5a4"]
+      },
+      {
+        "id": "multicam",
+        "label": "MultiCam (全地形)",
+        "colors": ["#7d7254", "#5d5940", "#9c8b6a", "#4a4332"]
+      },
+      {
+        "id": "ucp_acu",
+        "label": "UCP/ACU (米陸軍都市)",
+        "colors": ["#8a8e84", "#a3a79a", "#7d8177", "#6b6f67"]
+      },
+      {
+        "id": "ocp_scorpion",
+        "label": "OCP/Scorpion W2 (米陸軍新型)",
+        "colors": ["#7a7052", "#9b8968", "#5c5641", "#b4a684"]
+      },
+      {
+        "id": "dpm_british",
+        "label": "DPM (英軍森林)",
+        "colors": ["#4d5e38", "#3a4528", "#6b5a3d", "#2c3520"]
+      },
+      {
+        "id": "ddpm_desert",
+        "label": "DDPM (英軍砂漠)",
+        "colors": ["#c8b69a", "#a89578", "#8a755f", "#d9cbb1"]
+      },
+      {
+        "id": "flecktarn",
+        "label": "Flecktarn (独軍森林)",
+        "colors": ["#4a5c3a", "#3d4d2f", "#6d5843", "#7a8a5c"]
+      },
+      {
+        "id": "tropentarn",
+        "label": "Tropentarn (独軍砂漠)",
+        "colors": ["#c4a982", "#a38b68", "#8a7157", "#d8c19f"]
+      },
+      {
+        "id": "flora_russian",
+        "label": "Flora (露軍森林)",
+        "colors": ["#4e5d3c", "#3a4a2c", "#6a5a40", "#2e3d25"]
+      },
+      {
+        "id": "surpat_desert",
+        "label": "SURPAT Desert (露軍砂漠)",
+        "colors": ["#c7b095", "#b59f7d", "#9a8467", "#d9c8a8"]
+      },
+      {
+        "id": "jgsdf_type1",
+        "label": "陸上自衛隊 1型 (森林)",
+        "colors": ["#4d5e3d", "#3c4d2e", "#6a5b42", "#2d3c24"]
+      },
+      {
+        "id": "jgsdf_type2_desert",
+        "label": "陸上自衛隊 2型 (砂漠)",
+        "colors": ["#c5aa87", "#ab936f", "#8f7a5d", "#d6c29c"]
+      },
+      {
+        "id": "cadpat_woodland",
+        "label": "CADPAT Woodland (加軍森林)",
+        "colors": ["#3f5031", "#2d3d24", "#5a6944", "#4e5e3a"]
+      },
+      {
+        "id": "cadpat_arid",
+        "label": "CADPAT Arid (加軍砂漠)",
+        "colors": ["#c3a889", "#a89270", "#8d7a5e", "#d4bb9b"]
+      },
+      {
+        "id": "urban_gray",
+        "label": "Urban Gray (都市迷彩)",
+        "colors": ["#6d7278", "#8a8e94", "#5c6168", "#4d5157"]
+      },
+      {
+        "id": "digital_navy_nwu",
+        "label": "NWU Type I (米海軍デジタル)",
+        "colors": ["#455963", "#5c6d78", "#3a4a54", "#6b7c87"]
+      },
+      {
+        "id": "tigerstripe",
+        "label": "Tigerstripe (ベトナム戦)",
+        "colors": ["#4a5a3c", "#3c4d2e", "#2d3d22", "#5d6d48"]
+      },
+      {
+        "id": "desert_6color",
+        "label": "Desert 6-Color (湾岸戦)",
+        "colors": ["#c9b596", "#a89576", "#d8c8a8", "#8e7a60", "#b9a585", "#7a6852"]
+      }
+    ]
+  }
+}
