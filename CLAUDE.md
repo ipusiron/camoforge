@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Pattern Generation (js/main.js)
 
-Four pattern generators, all using Canvas 2D API. Each function uses **random offsets** to generate different patterns on each regeneration, even with identical parameters.
+Five pattern generators, all using Canvas 2D API. Each function uses **random offsets or seeds** to generate different patterns on each regeneration, even with identical parameters.
 
 1. **drawBlackMatte** (js/main.js:453-490)
    - Matte black texture using multi-octave Perlin noise with vignetting
@@ -43,7 +43,22 @@ Four pattern generators, all using Canvas 2D API. Each function uses **random of
      - `palette`: Panel color (index 0), screw color (index 1)
    - Random offset applied to cell jitter and vent positioning
 
-4. **drawCustomNoise** (js/main.js:588-620)
+4. **drawDigitalCamo** (js/main.js:621-685)
+   - Digital camouflage (MARPAT-style) with pixelated rectangular patterns
+   - Multi-scale approach: 3 layers (large/medium/small pixels) with varying density
+   - Parameters used:
+     - `scale`: Base pixel size (8-300 input → 5-100px base, up to 160px for large pixels)
+     - `bright`: Background brightness and color adjustment
+     - `contrast`: Pixel size variation multiplier (0.2-2.5 → 0.5-2.0x)
+     - `palette`: All colors randomly selected for each pixel
+   - Random seed applied to pixel placement and Perlin-based density control
+   - Key features:
+     - Sharp edges (non-blurred rectangles)
+     - Natural distribution using Perlin noise for placement
+     - Variable pixel sizes within each layer
+     - Large pixel sizes suitable for 1280x720 canvas
+
+5. **drawCustomNoise** (js/main.js:588-620)
    - Perlin noise quantized to user-defined color palette
    - Parameters used:
      - `scale`: Noise frequency

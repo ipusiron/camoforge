@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'cable': 'cable-bundle',
     'hardware': 'hw-panel',
     'black-matte': 'black-matte',
+    'digital': 'digital-camo',
     'custom': 'custom-noise'
   };
 
@@ -52,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'cable': ['cable_bundles'],
     'hardware': ['hardware_panels'],
     'black-matte': ['cable_bundles', 'hardware_panels'],
+    'digital': ['military_camouflage'],
     'custom': ['military_camouflage', 'cable_bundles', 'hardware_panels', 'office_backgrounds']
   };
 
@@ -389,6 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
       drawCableBundle(ctx,w,h,scale,contrast,bright,palette);
     } else if(preset === 'hw-panel') {
       drawHwPanel(ctx,w,h,scale,contrast,bright,palette);
+    } else if(preset === 'digital-camo') {
+      drawDigitalCamo(ctx,w,h,scale,contrast,bright,palette);
     } else {
       drawCustomNoise(ctx,w,h,scale,contrast,bright,palette);
     }
@@ -616,6 +620,72 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     ctx.putImageData(img,0,0);
+  }
+
+  function drawDigitalCamo(ctx,w,h,scale,contrast,bright,palette){
+    // デジタル迷彩（MARPAT風）：ピクセル化された矩形パターン
+    // ランダムシードで再生成ごとに異なるパターンを生成
+    const randomSeed = Math.random() * 10000;
+
+    // 明るさパラメーターを背景色に反映
+    const baseBrightness = clamp(15 + Math.round(bright * 25), 0, 60);
+    const bgColor = `rgb(${baseBrightness},${baseBrightness},${baseBrightness})`;
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0,0,w,h);
+
+    // スケールパラメーターで基本ピクセルサイズを調整（8-300 → 5-100px）
+    const basePixelSize = Math.max(5, Math.min(100, Math.floor(scale / 3)));
+
+    // コントラストでピクセルサイズのバリエーションを調整（0.2-2.5 → 0.5-2.0倍）
+    const sizeVariation = clamp(contrast * 0.8, 0.5, 2.0);
+
+    // パレットが空の場合はデフォルト色を使用
+    const colors = palette.length > 0 ? palette : ['#2d3d1f', '#4a5a3c', '#5a6c3a', '#3d4a2c'];
+    const nColors = colors.length;
+
+    // マルチスケールピクセル生成（大・中・小の3レイヤー）
+    const layers = [
+      { size: basePixelSize * sizeVariation * 2.0, density: 0.3 },  // 大ピクセル（30%密度）
+      { size: basePixelSize * sizeVariation, density: 0.5 },         // 中ピクセル（50%密度）
+      { size: basePixelSize * sizeVariation * 0.5, density: 0.7 }   // 小ピクセル（70%密度）
+    ];
+
+    layers.forEach((layer, layerIdx) => {
+      const pixelSize = Math.max(2, Math.floor(layer.size));
+      const cols = Math.ceil(w / pixelSize) + 1;
+      const rows = Math.ceil(h / pixelSize) + 1;
+
+      for(let r=0; r<rows; r++){
+        for(let c=0; c<cols; c++){
+          // Perlinノイズを使って配置密度を制御（自然な分布）
+          const nx = (c + randomSeed) * 0.1;
+          const ny = (r + randomSeed) * 0.1;
+          const noise = (Perlin.noise2(nx, ny) + 1) / 2;
+
+          // レイヤーの密度に応じて描画するか判定
+          if(noise > (1 - layer.density)){
+            const x = c * pixelSize + Math.random() * pixelSize * 0.3 - pixelSize * 0.15;
+            const y = r * pixelSize + Math.random() * pixelSize * 0.3 - pixelSize * 0.15;
+
+            // ピクセルサイズにランダムなバリエーションを追加
+            const pw = pixelSize * (0.8 + Math.random() * 0.4);
+            const ph = pixelSize * (0.8 + Math.random() * 0.4);
+
+            // パレットからランダムに色を選択
+            const colorIdx = Math.floor(Math.random() * nColors);
+            let color = colors[colorIdx];
+
+            // 明るさパラメーターで色を調整
+            if(bright !== 0){
+              color = shade(color, bright * 15);
+            }
+
+            ctx.fillStyle = color;
+            ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(pw), Math.ceil(ph));
+          }
+        }
+      }
+    });
   }
 
   // ===== Preset palette loader (Japanese category labels) =====
