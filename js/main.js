@@ -451,13 +451,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== Pattern generators =====
   function drawBlackMatte(ctx,w,h,scale,contrast,bright,palette){
-    // 微細ノイズ＋わずかなビネットで“艶消し漆黒”の質感を再現（視覚デモ用）
+    // 微細ノイズ＋わずかなビネットで"艶消し漆黒"の質感を再現（視覚デモ用）
+    // ランダムオフセットを追加して再生成ごとに異なるパターンを生成
+    const randomOffsetX = Math.random() * 1000;
+    const randomOffsetY = Math.random() * 1000;
+
     const img = ctx.createImageData(w,h);
     const data = img.data;
     const base = 12 + Math.round((bright+1)*10); // ベース明度
     for(let y=0;y<h;y++){
       for(let x=0;x<w;x++){
-        const nx = x/scale, ny = y/scale;
+        const nx = (x + randomOffsetX)/scale, ny = (y + randomOffsetY)/scale;
         let n = 0, amp=1, freq=1;
         for(let o=0;o<5;o++){
           n += (Perlin.noise2(nx*freq, ny*freq) + 1)/2 * amp;
@@ -487,15 +491,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function drawCableBundle(ctx,w,h,scale,contrast,bright,palette){
     // 束ねられたケーブルを思わせる縦ストライプ＋わずかな蛇行
-    ctx.fillStyle = '#0b0b0b';
+    // ランダムオフセットを追加して再生成ごとに異なるパターンを生成
+    const randomOffset = Math.random() * 1000;
+
+    // 明るさパラメーターを背景色に反映
+    const baseBrightness = clamp(11 + Math.round(bright * 15), 0, 40);
+    const bgColor = `rgb(${baseBrightness},${baseBrightness},${baseBrightness})`;
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0,0,w,h);
-    const stripes = 14;
+
+    // スケールパラメーターでストライプ数を調整（8-300 → 8-25本）
+    const stripes = Math.max(8, Math.min(25, Math.floor(scale / 12)));
     for(let i=0;i<stripes;i++){
-      const baseX = (i/stripes)*w + Perlin.noise2(i*0.3, i*0.1)*12;
-      const width = Math.max(6, w/stripes*0.95 + Perlin.noise2(i,10)*20);
+      const baseX = (i/stripes)*w + Perlin.noise2((i+randomOffset)*0.3, (i+randomOffset)*0.1)*12;
+      const width = Math.max(6, w/stripes*0.95 + Perlin.noise2(i+randomOffset,10+randomOffset)*20);
       const color = palette[i % palette.length] || (i%2?'#111':'#222');
       ctx.save();
-      const angle = Perlin.noise2(i, i*0.5) * 0.08;
+      const angle = Perlin.noise2(i+randomOffset, (i+randomOffset)*0.5) * 0.08;
       ctx.translate(baseX, 0);
       ctx.rotate(angle);
       const grad = ctx.createLinearGradient(0,0,width,0);
@@ -506,18 +518,29 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillRect(-10, -30, width + 20, h + 60);
       ctx.restore();
     }
-    // 微細ノイズ
+    // 微細ノイズ（明るさに応じて調整）
     ctx.globalCompositeOperation = 'overlay';
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    const noiseAlpha = clamp(0.12 - bright * 0.05, 0.02, 0.25);
+    ctx.fillStyle = `rgba(0,0,0,${noiseAlpha})`;
     ctx.fillRect(0,0,w,h);
     ctx.globalCompositeOperation = 'source-over';
   }
 
   function drawHwPanel(ctx,w,h,scale,contrast,bright,palette){
     // 機器パネル風：グリッド、通気スリット、ネジ
-    ctx.fillStyle = '#0f0f10';
+    // ランダムオフセットを追加して再生成ごとに異なるパターンを生成
+    const randomOffsetX = Math.random() * 1000;
+    const randomOffsetY = Math.random() * 1000;
+
+    // 明るさパラメーターを背景色に反映
+    const baseBrightness = clamp(15 + Math.round(bright * 20), 0, 50);
+    const bgColor = `rgb(${baseBrightness},${baseBrightness},${baseBrightness})`;
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0,0,w,h);
-    const cols = 10, rows = 6;
+
+    // スケールパラメーターでグリッドの密度を調整（8-300 → 4-15 cols, 2-9 rows）
+    const cols = Math.max(4, Math.min(15, Math.floor(20 - scale / 20)));
+    const rows = Math.max(2, Math.min(9, Math.floor(12 - scale / 40)));
     const padX = 60, padY = 60;
     const cellW = (w - padX*2) / cols;
     const cellH = (h - padY*2) / rows;
@@ -526,33 +549,36 @@ document.addEventListener('DOMContentLoaded', () => {
       for(let c=0;c<cols;c++){
         const x = padX + c*cellW;
         const y = padY + r*cellH;
-        const jitter = Perlin.noise2(c*0.8, r*0.8) * 8;
+        const jitter = Perlin.noise2((c+randomOffsetX)*0.8, (r+randomOffsetY)*0.8) * 8;
         const cw = cellW - 10 + jitter;
         const ch = cellH - 10 + jitter;
 
-        // 面
-        ctx.fillStyle = '#101010';
+        // 面（パレットの最初の色を使用、なければデフォルト）
+        const panelColor = palette[0] || '#101010';
+        ctx.fillStyle = panelColor;
         roundRect(ctx, x+5, y+5, cw, ch, 6, true, false);
 
         // 通気スリット
         const ventCols = 6;
         ctx.fillStyle = `rgba(0,0,0,${0.45+0.1*contrast})`;
         for(let v=0; v<ventCols; v++){
-          const vx = x + 8 + v*(cw/ventCols) + Perlin.noise2(v,c)*4;
+          const vx = x + 8 + v*(cw/ventCols) + Perlin.noise2(v+randomOffsetX,c+randomOffsetY)*4;
           ctx.fillRect(vx, y + ch/2 - 3, cw/ventCols - 6, 6);
         }
 
-        // ネジ
-        ctx.fillStyle = '#0b0b0b';
+        // ネジ（パレットの2番目の色を使用、なければデフォルト）
+        const screwColor = palette[1] || '#0b0b0b';
+        ctx.fillStyle = screwColor;
         ctx.beginPath(); ctx.arc(x+12, y+12, 4, 0, Math.PI*2); ctx.fill();
         ctx.beginPath(); ctx.arc(x+cw-8, y+ch-8, 4, 0, Math.PI*2); ctx.fill();
       }
     }
 
-    // 細かい擦り傷
+    // 細かい擦り傷（コントラストに応じて量を調整）
     ctx.globalCompositeOperation = 'overlay';
     ctx.fillStyle = 'rgba(255,255,255,0.01)';
-    for(let i=0;i<600;i++){
+    const scratchCount = Math.round(600 * contrast);
+    for(let i=0;i<scratchCount;i++){
       const rx = Math.random()*w, ry = Math.random()*h;
       ctx.fillRect(rx, ry, Math.random()*1.5, Math.random()*0.2);
     }
@@ -561,12 +587,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function drawCustomNoise(ctx,w,h,scale,contrast,bright,palette){
     // Perlinベースの多階調ノイズをパレット量子化
+    // ランダムオフセットを追加して再生成ごとに異なるパターンを生成
+    const randomOffsetX = Math.random() * 1000;
+    const randomOffsetY = Math.random() * 1000;
+
     const img = ctx.createImageData(w,h);
     const data = img.data;
     const nColors = Math.max(1, palette.length);
     for(let y=0;y<h;y++){
       for(let x=0;x<w;x++){
-        const nx = x/scale, ny = y/scale;
+        const nx = (x + randomOffsetX)/scale, ny = (y + randomOffsetY)/scale;
         let n = 0, amp = 1, freq = 1;
         for(let o=0;o<4;o++){
           n += (Perlin.noise2(nx*freq, ny*freq) + 1)/2 * amp;
