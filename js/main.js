@@ -37,11 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let colorVisionMode = 'normal';
   let edgeDetectionEnabled = false;
 
+  // Pattern seed for deterministic regeneration (only changes on regenerate button click)
+  let patternSeed = Math.random() * 10000;
+
   // Pattern type to drawing function mapping
   const PATTERN_TYPE_MAP = {
     'military': 'custom-noise',
     'cable': 'cable-bundle',
-    'hardware': 'hw-panel',
     'black-matte': 'black-matte',
     'digital': 'digital-camo',
     'custom': 'custom-noise'
@@ -51,9 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const PATTERN_PRESETS = {
     'military': ['military_camouflage'],
     'cable': ['cable_bundles'],
-    'hardware': ['hardware_panels'],
-    'black-matte': ['cable_bundles', 'hardware_panels'],
-    'digital': ['military_camouflage'],
+    'black-matte': ['black_matte'],  // 漆黒マット専用（単色の黒系のみ）
+    'digital': ['digital_camouflage'],
     'custom': ['military_camouflage', 'cable_bundles', 'hardware_panels', 'office_backgrounds']
   };
 
@@ -280,17 +281,186 @@ document.addEventListener('DOMContentLoaded', () => {
   function updatePalettePreview(){
     const colors = parsePalette(paletteEl.value);
     palettePreview.innerHTML = '';
-    colors.forEach(color => {
+    colors.forEach((color, index) => {
       const swatch = document.createElement('div');
       swatch.className = 'palette-swatch';
       swatch.style.backgroundColor = color;
       swatch.setAttribute('data-color', color);
+      swatch.setAttribute('data-index', index);
+      swatch.style.cursor = 'pointer';
+      swatch.title = `${color} をクリックして変更`;
+
+      // クリックでカラーピッカーを表示
+      swatch.addEventListener('click', () => {
+        openColorPicker(color, index);
+      });
+
       palettePreview.appendChild(swatch);
     });
   }
 
+  // ===== Color picker modal for palette swatch =====
+  let colorPickerState = {
+    currentIndex: -1,
+    originalColor: '',
+    tempColor: ''
+  };
+
+  // HEX to RGB conversion
+  function hexToRgb(hex){
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+  }
+
+  // RGB to HEX conversion
+  function rgbToHex(r, g, b){
+    return '#' + [r, g, b].map(x => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+  }
+
+  // Update color preview and sliders
+  function updateColorPickerUI(hexColor){
+    const modal = document.getElementById('colorPickerModal');
+    const previewBox = document.getElementById('colorPreviewBox');
+    const hexInput = document.getElementById('colorHexInput');
+    const redSlider = document.getElementById('colorRedSlider');
+    const greenSlider = document.getElementById('colorGreenSlider');
+    const blueSlider = document.getElementById('colorBlueSlider');
+    const redValue = document.getElementById('colorRedValue');
+    const greenValue = document.getElementById('colorGreenValue');
+    const blueValue = document.getElementById('colorBlueValue');
+
+    // Update preview box
+    previewBox.style.backgroundColor = hexColor;
+
+    // Update HEX input
+    hexInput.value = hexColor.toUpperCase();
+
+    // Update RGB sliders
+    const rgb = hexToRgb(hexColor);
+    redSlider.value = rgb.r;
+    greenSlider.value = rgb.g;
+    blueSlider.value = rgb.b;
+    redValue.textContent = rgb.r;
+    greenValue.textContent = rgb.g;
+    blueValue.textContent = rgb.b;
+
+    // Update temporary color and real-time preview
+    colorPickerState.tempColor = hexColor;
+    updatePaletteColor(colorPickerState.currentIndex, hexColor);
+  }
+
+  // Open color picker modal
+  function openColorPicker(currentColor, index){
+    const modal = document.getElementById('colorPickerModal');
+
+    // Store state
+    colorPickerState.currentIndex = index;
+    colorPickerState.originalColor = currentColor;
+    colorPickerState.tempColor = currentColor;
+
+    // Initialize UI with current color
+    updateColorPickerUI(currentColor);
+
+    // Show modal
+    modal.style.display = 'flex';
+  }
+
+  // Close color picker modal
+  function closeColorPicker(){
+    const modal = document.getElementById('colorPickerModal');
+    modal.style.display = 'none';
+  }
+
+  // Confirm color change
+  function confirmColorChange(){
+    // Color is already applied via real-time preview
+    closeColorPicker();
+  }
+
+  // Cancel color change
+  function cancelColorChange(){
+    // Restore original color
+    updatePaletteColor(colorPickerState.currentIndex, colorPickerState.originalColor);
+    closeColorPicker();
+  }
+
+  // Initialize color picker event listeners
+  function initColorPicker(){
+    const modal = document.getElementById('colorPickerModal');
+    const closeBtn = document.getElementById('colorPickerClose');
+    const confirmBtn = document.getElementById('colorPickerConfirm');
+    const cancelBtn = document.getElementById('colorPickerCancel');
+    const hexInput = document.getElementById('colorHexInput');
+    const redSlider = document.getElementById('colorRedSlider');
+    const greenSlider = document.getElementById('colorGreenSlider');
+    const blueSlider = document.getElementById('colorBlueSlider');
+
+    // Close button
+    closeBtn.addEventListener('click', cancelColorChange);
+
+    // Confirm button
+    confirmBtn.addEventListener('click', confirmColorChange);
+
+    // Cancel button
+    cancelBtn.addEventListener('click', cancelColorChange);
+
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if(e.target === modal){
+        cancelColorChange();
+      }
+    });
+
+    // RGB sliders
+    const updateFromSliders = () => {
+      const r = parseInt(redSlider.value);
+      const g = parseInt(greenSlider.value);
+      const b = parseInt(blueSlider.value);
+      const hexColor = rgbToHex(r, g, b);
+      updateColorPickerUI(hexColor);
+    };
+
+    redSlider.addEventListener('input', updateFromSliders);
+    greenSlider.addEventListener('input', updateFromSliders);
+    blueSlider.addEventListener('input', updateFromSliders);
+
+    // HEX input
+    hexInput.addEventListener('input', (e) => {
+      let hex = e.target.value.trim();
+      // Auto-add # if missing
+      if(!hex.startsWith('#')){
+        hex = '#' + hex;
+      }
+      // Validate HEX format
+      if(/^#[0-9A-Fa-f]{6}$/.test(hex)){
+        updateColorPickerUI(hex);
+      }
+    });
+  }
+
+  // ===== Update specific color in palette =====
+  function updatePaletteColor(index, newColor){
+    const colors = parsePalette(paletteEl.value);
+    if(index >= 0 && index < colors.length){
+      colors[index] = newColor;
+      paletteEl.value = colors.join(',');
+      updatePalettePreview();
+      draw();
+    }
+  }
+
   // ===== Randomize all parameters =====
   function randomizeAll(){
+    // Generate new pattern seed
+    patternSeed = Math.random() * 10000;
+
     // Keep current pattern type (don't randomize)
     const patternType = patternTypeEl.value;
 
@@ -456,13 +626,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // ===== Pattern generators =====
   function drawBlackMatte(ctx,w,h,scale,contrast,bright,palette){
     // 微細ノイズ＋わずかなビネットで"艶消し漆黒"の質感を再現（視覚デモ用）
-    // ランダムオフセットを追加して再生成ごとに異なるパターンを生成
-    const randomOffsetX = Math.random() * 1000;
-    const randomOffsetY = Math.random() * 1000;
+    // グローバルシードを使用（再生成ボタンでのみ変化）
+    const randomOffsetX = patternSeed;
+    const randomOffsetY = patternSeed + 100;
+
+    // パレットの最初の色を基準色として使用（デフォルトは黒）
+    const baseColor = palette.length > 0 ? palette[0] : '#000000';
+    const baseRgb = hexToRgb(baseColor);
 
     const img = ctx.createImageData(w,h);
     const data = img.data;
-    const base = 12 + Math.round((bright+1)*10); // ベース明度
+
+    // 明るさパラメータでベース明度を調整（-1〜+1 → 0.8〜1.2倍）
+    const brightnessFactor = 1.0 + (bright * 0.2);
+
     for(let y=0;y<h;y++){
       for(let x=0;x<w;x++){
         const nx = (x + randomOffsetX)/scale, ny = (y + randomOffsetY)/scale;
@@ -472,13 +649,19 @@ document.addEventListener('DOMContentLoaded', () => {
           amp *= 0.5; freq *= 2;
         }
         n = Math.pow(n, 1.3); // 暗部を残す
+
+        // ビネット効果
         const dx = (x-w/2)/(w/2), dy = (y-h/2)/(h/2);
         const vig = 1 - Math.sqrt(dx*dx + dy*dy) * 0.6;
-        const v = clamp((base/255) + (n*0.4 - 0.2), 0, 1) * vig;
-        const col = Math.round(v * 30 * contrast);
+
+        // ノイズとビネット、コントラストを適用
+        const factor = clamp((n * 0.4 + 0.8) * vig * contrast * brightnessFactor, 0, 2);
+
         const i = (y*w + x)*4;
-        data[i]=data[i+1]=data[i+2]=clamp(col,0,255);
-        data[i+3]=255;
+        data[i]   = clamp(Math.round(baseRgb.r * factor), 0, 255);
+        data[i+1] = clamp(Math.round(baseRgb.g * factor), 0, 255);
+        data[i+2] = clamp(Math.round(baseRgb.b * factor), 0, 255);
+        data[i+3] = 255;
       }
     }
     ctx.putImageData(img,0,0);
@@ -495,8 +678,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function drawCableBundle(ctx,w,h,scale,contrast,bright,palette){
     // 束ねられたケーブルを思わせる縦ストライプ＋わずかな蛇行
-    // ランダムオフセットを追加して再生成ごとに異なるパターンを生成
-    const randomOffset = Math.random() * 1000;
+    // グローバルシードを使用（再生成ボタンでのみ変化）
+    const randomOffset = patternSeed;
 
     // 明るさパラメーターを背景色に反映
     const baseBrightness = clamp(11 + Math.round(bright * 15), 0, 40);
@@ -532,9 +715,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function drawHwPanel(ctx,w,h,scale,contrast,bright,palette){
     // 機器パネル風：グリッド、通気スリット、ネジ
-    // ランダムオフセットを追加して再生成ごとに異なるパターンを生成
-    const randomOffsetX = Math.random() * 1000;
-    const randomOffsetY = Math.random() * 1000;
+    // グローバルシードを使用（再生成ボタンでのみ変化）
+    const randomOffsetX = patternSeed;
+    const randomOffsetY = patternSeed + 100;
 
     // 明るさパラメーターを背景色に反映
     const baseBrightness = clamp(15 + Math.round(bright * 20), 0, 50);
@@ -591,9 +774,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function drawCustomNoise(ctx,w,h,scale,contrast,bright,palette){
     // Perlinベースの多階調ノイズをパレット量子化
-    // ランダムオフセットを追加して再生成ごとに異なるパターンを生成
-    const randomOffsetX = Math.random() * 1000;
-    const randomOffsetY = Math.random() * 1000;
+    // グローバルシードを使用（再生成ボタンでのみ変化）
+    const randomOffsetX = patternSeed;
+    const randomOffsetY = patternSeed + 100;
 
     const img = ctx.createImageData(w,h);
     const data = img.data;
@@ -620,35 +803,67 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     ctx.putImageData(img,0,0);
+
+    // 明るさパラメータを全体的なオーバーレイとして適用（パレット色の比率は保持）
+    if(bright !== 0){
+      const overlayAlpha = Math.abs(bright) * 0.3; // 0〜0.3の範囲
+      if(bright > 0){
+        // 明るくする（白のオーバーレイ）
+        ctx.fillStyle = `rgba(255, 255, 255, ${overlayAlpha})`;
+        ctx.fillRect(0, 0, w, h);
+      } else {
+        // 暗くする（黒のオーバーレイ）
+        ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
+        ctx.fillRect(0, 0, w, h);
+      }
+    }
   }
 
   function drawDigitalCamo(ctx,w,h,scale,contrast,bright,palette){
     // デジタル迷彩（MARPAT風）：ピクセル化された矩形パターン
-    // ランダムシードで再生成ごとに異なるパターンを生成
-    const randomSeed = Math.random() * 10000;
-
-    // 明るさパラメーターを背景色に反映
-    const baseBrightness = clamp(15 + Math.round(bright * 25), 0, 60);
-    const bgColor = `rgb(${baseBrightness},${baseBrightness},${baseBrightness})`;
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0,0,w,h);
-
-    // スケールパラメーターで基本ピクセルサイズを調整（8-300 → 5-100px）
-    const basePixelSize = Math.max(5, Math.min(100, Math.floor(scale / 3)));
-
-    // コントラストでピクセルサイズのバリエーションを調整（0.2-2.5 → 0.5-2.0倍）
-    const sizeVariation = clamp(contrast * 0.8, 0.5, 2.0);
+    // グローバルシードを使用（再生成ボタンでのみ変化）
+    const randomSeed = patternSeed;
 
     // パレットが空の場合はデフォルト色を使用
     const colors = palette.length > 0 ? palette : ['#2d3d1f', '#4a5a3c', '#5a6c3a', '#3d4a2c'];
     const nColors = colors.length;
 
-    // マルチスケールピクセル生成（大・中・小の3レイヤー）
+    // スケールパラメーターで基本ピクセルサイズを調整（8-300 → 5-100px）
+    const basePixelSize = Math.max(5, Math.min(100, Math.floor(scale / 3)));
+
+    // マルチスケールピクセル生成（大・中・小の3レイヤー）- 密度を上げて隙間を埋める
     const layers = [
-      { size: basePixelSize * sizeVariation * 2.0, density: 0.3 },  // 大ピクセル（30%密度）
-      { size: basePixelSize * sizeVariation, density: 0.5 },         // 中ピクセル（50%密度）
-      { size: basePixelSize * sizeVariation * 0.5, density: 0.7 }   // 小ピクセル（70%密度）
+      { size: basePixelSize * 2.0, density: 0.6 },  // 大ピクセル（60%密度）
+      { size: basePixelSize, density: 0.8 },         // 中ピクセル（80%密度）
+      { size: basePixelSize * 0.5, density: 1.0 }   // 小ピクセル（100%密度）
     ];
+
+    // コントラストでパレット色の明暗差を調整（色の相対関係は保つ）
+    const adjustedColors = colors.map(color => {
+      if(contrast === 1.0) return color;
+
+      // RGB値を取得
+      const rgb = hexToRgb(color);
+
+      // 明度を計算（perceived luminance）
+      const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+
+      // コントラスト調整：明度を基準に調整
+      // contrast > 1.0: 暗い色はより暗く、明るい色はより明るく
+      // contrast < 1.0: すべての色を中間に近づける
+      const adjustedLum = 0.5 + (luminance - 0.5) * contrast;
+      const factor = adjustedLum / (luminance || 0.001); // 0除算回避
+
+      const newR = clamp(Math.round(rgb.r * factor), 0, 255);
+      const newG = clamp(Math.round(rgb.g * factor), 0, 255);
+      const newB = clamp(Math.round(rgb.b * factor), 0, 255);
+
+      return rgbToHex(newR, newG, newB);
+    });
+
+    // 背景を調整後の最初の色（通常は最も暗い色）で塗りつぶし、隙間をなくす
+    ctx.fillStyle = adjustedColors[0];
+    ctx.fillRect(0,0,w,h);
 
     layers.forEach((layer, layerIdx) => {
       const pixelSize = Math.max(2, Math.floor(layer.size));
@@ -664,21 +879,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // レイヤーの密度に応じて描画するか判定
           if(noise > (1 - layer.density)){
-            const x = c * pixelSize + Math.random() * pixelSize * 0.3 - pixelSize * 0.15;
-            const y = r * pixelSize + Math.random() * pixelSize * 0.3 - pixelSize * 0.15;
+            // Perlinノイズを使って位置オフセットを決定的に生成
+            const offsetNoiseX = Perlin.noise2((c + randomSeed) * 0.3, (r + randomSeed) * 0.3);
+            const offsetNoiseY = Perlin.noise2((c + randomSeed) * 0.3 + 100, (r + randomSeed) * 0.3 + 100);
+            const x = c * pixelSize + offsetNoiseX * pixelSize * 0.3;
+            const y = r * pixelSize + offsetNoiseY * pixelSize * 0.3;
 
-            // ピクセルサイズにランダムなバリエーションを追加
-            const pw = pixelSize * (0.8 + Math.random() * 0.4);
-            const ph = pixelSize * (0.8 + Math.random() * 0.4);
+            // Perlinノイズを使ってピクセルサイズのバリエーションを決定的に生成
+            const sizeNoiseW = (Perlin.noise2((c + randomSeed) * 0.5, (r + randomSeed) * 0.5 + 200) + 1) / 2;
+            const sizeNoiseH = (Perlin.noise2((c + randomSeed) * 0.5 + 300, (r + randomSeed) * 0.5 + 300) + 1) / 2;
+            const pw = pixelSize * (0.8 + sizeNoiseW * 0.4);
+            const ph = pixelSize * (0.8 + sizeNoiseH * 0.4);
 
-            // パレットからランダムに色を選択
-            const colorIdx = Math.floor(Math.random() * nColors);
-            let color = colors[colorIdx];
-
-            // 明るさパラメーターで色を調整
-            if(bright !== 0){
-              color = shade(color, bright * 15);
-            }
+            // Perlinノイズを使ってパレット色を決定的に選択
+            const colorNoise = (Perlin.noise2((c + randomSeed) * 0.7 + 500, (r + randomSeed) * 0.7 + 500) + 1) / 2;
+            const colorIdx = Math.floor(colorNoise * nColors) % nColors;
+            const color = adjustedColors[colorIdx];  // コントラスト調整済みの色を使用
 
             ctx.fillStyle = color;
             ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(pw), Math.ceil(ph));
@@ -686,6 +902,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+
+    // 明るさパラメータを全体的なオーバーレイとして適用（軍用スペック色の比率は保持）
+    if(bright !== 0){
+      const overlayAlpha = Math.abs(bright) * 0.3; // 0〜0.3の範囲
+      if(bright > 0){
+        // 明るくする（白のオーバーレイ）
+        ctx.fillStyle = `rgba(255, 255, 255, ${overlayAlpha})`;
+        ctx.fillRect(0, 0, w, h);
+      } else {
+        // 暗くする（黒のオーバーレイ）
+        ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
+        ctx.fillRect(0, 0, w, h);
+      }
+    }
   }
 
   // ===== Preset palette loader (Japanese category labels) =====
@@ -694,7 +924,9 @@ document.addEventListener('DOMContentLoaded', () => {
       cable_bundles: 'ケーブル群',
       hardware_panels: 'ハードウェア・パネル',
       office_backgrounds: 'オフィス背景',
-      military_camouflage: '軍用迷彩'
+      military_camouflage: '軍用迷彩',
+      digital_camouflage: 'デジタル迷彩',
+      black_matte: '漆黒マット'
     };
 
     // JSONロード
@@ -843,7 +1075,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== UI events =====
-  regenBtn.addEventListener('click', draw);
+  regenBtn.addEventListener('click', () => {
+    patternSeed = Math.random() * 10000;  // 新しいシードを生成
+    draw();
+  });
 
   randomizeBtn.addEventListener('click', randomizeAll);
 
@@ -876,6 +1111,29 @@ document.addEventListener('DOMContentLoaded', () => {
     a.click();
   });
 
+  // ===== Load environment image from URL or file =====
+  function loadEnvironmentImage(src, isFile = false){
+    const img = new Image();
+    img.onload = () => {
+      envImage = img;
+      draw();
+      // Revoke object URL after loading if it was a blob
+      if(isFile){
+        URL.revokeObjectURL(img.src);
+      }
+    };
+    img.onerror = () => {
+      if(isFile){
+        alert('画像の読み込みに失敗しました');
+        URL.revokeObjectURL(img.src);
+        envUpload.value = ''; // Reset input
+      } else {
+        console.warn('Default background image not found:', src);
+      }
+    };
+    img.src = src;
+  }
+
   envUpload.addEventListener('change', (ev) => {
     const f = ev.target.files && ev.target.files[0];
     if(!f) return;
@@ -896,19 +1154,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const img = new Image();
-    img.onload = () => {
-      envImage = img;
-      draw();
-      // Revoke object URL after loading to free memory
-      URL.revokeObjectURL(img.src);
-    };
-    img.onerror = () => {
-      alert('画像の読み込みに失敗しました');
-      URL.revokeObjectURL(img.src);
-      envUpload.value = ''; // Reset input
-    };
-    img.src = URL.createObjectURL(f);
+    loadEnvironmentImage(URL.createObjectURL(f), true);
   });
 
   // Color vision mode selector
@@ -955,7 +1201,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== Initial draw and setup =====
+  initColorPicker(); // Initialize color picker modal
   updateRangeValues();
   updatePalettePreview();
   draw();
+
+  // Load default background image
+  loadEnvironmentImage('./assets/background.jpg', false);
 });

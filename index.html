@@ -57,7 +57,6 @@
                 <option value="military">軍用迷彩風（ノイズ）</option>
                 <option value="digital">デジタル迷彩（ピクセル）</option>
                 <option value="cable">ケーブル群（ストライプ）</option>
-                <option value="hardware">ハードウェアパネル（グリッド）</option>
                 <option value="black-matte">漆黒マット（ビネット）</option>
                 <option value="custom">カスタムノイズ</option>
               </select>
@@ -276,6 +275,50 @@
       </div>
     </div>
   </main>
+
+  <!-- Color Picker Modal -->
+  <div id="colorPickerModal" class="modal" style="display: none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>カラー編集</h3>
+        <button class="modal-close" id="colorPickerClose">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="color-preview-section">
+          <div class="color-preview-box" id="colorPreviewBox"></div>
+          <div class="color-hex-input">
+            <label>HEX</label>
+            <input type="text" id="colorHexInput" class="input" maxlength="7" placeholder="#000000">
+          </div>
+        </div>
+        <div class="color-sliders">
+          <div class="color-slider-group">
+            <label>Red (R)</label>
+            <input type="range" id="colorRedSlider" class="input range" min="0" max="255" value="0">
+            <span class="range-value" id="colorRedValue">0</span>
+          </div>
+          <div class="color-slider-group">
+            <label>Green (G)</label>
+            <input type="range" id="colorGreenSlider" class="input range" min="0" max="255" value="0">
+            <span class="range-value" id="colorGreenValue">0</span>
+          </div>
+          <div class="color-slider-group">
+            <label>Blue (B)</label>
+            <input type="range" id="colorBlueSlider" class="input range" min="0" max="255" value="0">
+            <span class="range-value" id="colorBlueValue">0</span>
+          </div>
+        </div>
+        <div class="color-info">
+          <small>リアルタイムでプレビューに反映されます</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="colorPickerCancel">キャンセル</button>
+        <button class="btn btn-primary" id="colorPickerConfirm">確定</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="site-footer">
     <div class="footer-inner">

@@ -258,6 +258,100 @@
         "label": "Desert 6-Color (湾岸戦)",
         "colors": ["#c9b596", "#a89576", "#d8c8a8", "#8e7a60", "#b9a585", "#7a6852"]
       }
+    ],
+    "digital_camouflage": [
+      {
+        "id": "marpat_woodland_digital",
+        "label": "MARPAT Woodland (米海兵隊・森林)",
+        "colors": ["#2E2C35", "#896E60", "#95837A", "#4E5B51"]
+      },
+      {
+        "id": "marpat_desert_digital",
+        "label": "MARPAT Desert (米海兵隊・砂漠)",
+        "colors": ["#63432A", "#7B6243", "#9FA090", "#8B8974"]
+      },
+      {
+        "id": "ucp_acu_digital",
+        "label": "UCP/ACU (米陸軍・都市型)",
+        "colors": ["#737369", "#53544C", "#BAAB93"]
+      },
+      {
+        "id": "nwu_type1_digital",
+        "label": "NWU Type I Blueberries (米海軍・海洋)",
+        "colors": ["#B2B4CB", "#515A6B", "#27395F", "#322F42"]
+      },
+      {
+        "id": "aor1_digital",
+        "label": "AOR1 / NWU Type II (米海軍・砂漠)",
+        "colors": ["#5a3a22", "#6e5638", "#8a7e6e", "#7a786a"]
+      },
+      {
+        "id": "aor2_digital",
+        "label": "AOR2 / NWU Type III (米海軍・森林)",
+        "colors": ["#252228", "#7a5e52", "#847668", "#465045"]
+      },
+      {
+        "id": "cadpat_tw_digital",
+        "label": "CADPAT TW (カナダ軍・森林)",
+        "colors": ["#142513", "#69562c", "#395018", "#5e8528"]
+      },
+      {
+        "id": "cadpat_arid_digital",
+        "label": "CADPAT AR (カナダ軍・砂漠)",
+        "colors": ["#C9B896", "#A89576", "#8E7A60", "#B9A585"]
+      },
+      {
+        "id": "pla_type07_universal",
+        "label": "Type 07 Universal (中国人民解放軍・汎用)",
+        "colors": ["#7a7d75", "#5a6a4a", "#4a3f2a", "#2a2a2a"]
+      },
+      {
+        "id": "pla_type07_desert",
+        "label": "Type 07 Desert (中国人民解放軍・砂漠)",
+        "colors": ["#d4c5a0", "#a89070", "#6e5540", "#4a3020"]
+      },
+      {
+        "id": "pla_type07_woodland",
+        "label": "Type 07 Woodland (中国人民解放軍・森林)",
+        "colors": ["#5e6e3e", "#8a9a5a", "#4a3820", "#2a2a1a"]
+      },
+      {
+        "id": "pla_type07_urban",
+        "label": "Type 07 Urban (中国人民解放軍・都市)",
+        "colors": ["#6a7078", "#505860", "#4a5a52", "#3a4248"]
+      }
+    ],
+    "black_matte": [
+      {
+        "id": "matte_pure_black",
+        "label": "Pure Black (純黒)",
+        "colors": ["#000000"]
+      },
+      {
+        "id": "matte_charcoal",
+        "label": "Charcoal (炭色)",
+        "colors": ["#0b0b0b"]
+      },
+      {
+        "id": "matte_graphite",
+        "label": "Graphite (黒鉛)",
+        "colors": ["#101010"]
+      },
+      {
+        "id": "matte_dark_gray",
+        "label": "Dark Gray (暗灰色)",
+        "colors": ["#1a1a1a"]
+      },
+      {
+        "id": "matte_gunmetal",
+        "label": "Gunmetal (銃鉄色)",
+        "colors": ["#0f1113"]
+      },
+      {
+        "id": "matte_anthracite",
+        "label": "Anthracite (無煙炭)",
+        "colors": ["#111214"]
+      }
     ]
   }
 }
