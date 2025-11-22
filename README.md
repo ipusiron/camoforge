@@ -1,11 +1,34 @@
 <!--
 ---
-title: CamoForge
-category: visualization
+id: day085
+slug: camoforge
+
+title: "CamoForge"
+
+subtitle_ja: "迷彩パターン生成ツール"
+subtitle_en: "A camouflage pattern generator"
+
+description_ja: "漆黒・ケーブル群・ハードウェア・オフィス背景など、多様な環境下での迷彩パターンを生成・比較できるWebツール。自然界と人工物の“馴染み方”を体感し、カモフラージュの原理を学ぶ。"
+description_en: "A web-based camouflage pattern generator that visualizes how colors and textures blend across environments—black matte, cables, hardware panels, and office backgrounds—to study the principles of camouflage and visual integration."
+
+category_ja:
+  - サイバー忍術
+category_en:
+  - Cyber Ninjutsu
+
 difficulty: 2
-description: Web-based generator for camouflage patterns — create, experiment, and study how designs blend into different environments. Educational and research use only.
-tags: [camouflage, visualization, security-education, javascript, perlin-noise]
-demo: https://ipusiron.github.io/camoforge/
+
+tags:
+  - camouflage
+  - visualization
+  - javascript
+  - perlin-noise
+  - research
+
+repo_url: "https://github.com/ipusiron/camoforge"
+demo_url: "https://ipusiron.github.io/camoforge/"
+
+hub: true
 ---
 -->
 
