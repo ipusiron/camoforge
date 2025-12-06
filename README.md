@@ -8,7 +8,7 @@ title: "CamoForge"
 subtitle_ja: "迷彩パターン生成ツール"
 subtitle_en: "A camouflage pattern generator"
 
-description_ja: "漆黒・ケーブル群・ハードウェア・オフィス背景など、多様な環境下での迷彩パターンを生成・比較できるWebツール。自然界と人工物の“馴染み方”を体感し、カモフラージュの原理を学ぶ。"
+description_ja: "漆黒・ケーブル群・ハードウェア・オフィス背景など、多様な環境下での迷彩パターンを生成・比較できるWebツール。自然界と人工物の馴染み方を体感し、カモフラージュの原理を学ぶ。"
 description_en: "A web-based camouflage pattern generator that visualizes how colors and textures blend across environments—black matte, cables, hardware panels, and office backgrounds—to study the principles of camouflage and visual integration."
 
 category_ja:
