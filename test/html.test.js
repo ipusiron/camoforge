@@ -29,7 +29,8 @@ test('インラインのイベントハンドラーとinline scriptがない', (
 
 test('スクリプトを依存の順で読み込む（color-utils → perlin → cable-plan → main）', () => {
   const order = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
-  assert.deepEqual(order, ['js/color-utils.js', 'js/perlin.js', 'js/cable-plan.js', 'js/main.js']);
+  assert.deepEqual(order, ['js/color-utils.js', 'js/perlin.js', 'js/cable-plan.js',
+    'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/main.js']);
 });
 
 test('パターンタイプは6つで、ハードウェアパネルが有効', () => {
@@ -58,6 +59,13 @@ test('色覚の選択肢が2色覚の表記になっている', () => {
   assert.ok(html.includes('2型2色覚（Deuteranopia）'));
   assert.ok(html.includes('3型2色覚（Tritanopia）'));
   assert.ok(!html.includes('赤弱 / Protanopia'), '赤弱（Protanomaly）との混同が残っている');
+});
+
+test('馴染み度・検出ビュー・色抽出のUIがある', () => {
+  assert.ok(html.includes('id="blendPanel"'));
+  assert.ok(html.includes('id="blendTotal"'));
+  assert.ok(html.includes('id="enableDetectView"'));
+  assert.ok(html.includes('id="extractPalette"'));
 });
 
 test('lang属性とviewportがある', () => {

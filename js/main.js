@@ -579,6 +579,23 @@ document.addEventListener('DOMContentLoaded', () => {
       cctx.putImageData(imgData, 0, 0);
     }
 
+    // 馴染み度の評価と検出ビュー（環境画像があるときだけ）。色覚フィルターの前に測る
+    if(envImage && envOnlyCtx){
+      updateBlendReadout(w, h);
+      if(detectViewEnabled){
+        drawDetectView(w, h);
+      }
+    } else {
+      clearBlendReadout();
+    }
+
+    // Apply color vision filter to composite canvas (right side of comparison)
+    if(colorVisionMode !== 'normal'){
+      const imgData = cctx.getImageData(0, 0, w, h);
+      applyColorVisionFilter(imgData, colorVisionMode);
+      cctx.putImageData(imgData, 0, 0);
+    }
+
     // Apply edge detection filter if enabled (applied AFTER color vision simulation)
     if(edgeDetectionEnabled){
       if(envOnlyCtx){
@@ -591,6 +608,72 @@ document.addEventListener('DOMContentLoaded', () => {
       applyEdgeDetection(compImgData, w, h);
       cctx.putImageData(compImgData, 0, 0);
     }
+  }
+
+  // ===== 馴染み度の評価と検出ビュー（第2弾） =====
+  let detectViewEnabled = false;
+  let lastDetectScore = null;
+
+  const GRADE_LABEL = { high: 'よく馴染む', medium: 'まあ馴染む', low: 'やや目立つ', poor: '目立つ' };
+
+  // パターン（patternCanvas）と背景（envOnlyCanvas）の色・明るさ・コントラストのずれから馴染み度を出す
+  function updateBlendReadout(w, h){
+    const panel = document.getElementById('blendPanel');
+    if(!panel) return;
+    const patternData = ctx.getImageData(0, 0, w, h).data;
+    const envData = envOnlyCtx.getImageData(0, 0, w, h).data;
+    // 全画素は重いので間引く
+    const step = 7;
+    const r = BlendScore.evaluate(patternData, envData, step);
+    panel.hidden = false;
+    setBar('blendColor', r.colorMatch);
+    setBar('blendLum', r.lumMatch);
+    setBar('blendContrast', r.contrastMatch);
+    const total = document.getElementById('blendTotal');
+    const grade = document.getElementById('blendGrade');
+    if(total) total.textContent = String(r.blend);
+    if(grade){
+      grade.textContent = GRADE_LABEL[BlendScore.grade(r.blend)] || '';
+    }
+  }
+
+  function setBar(id, value){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const bar = el.querySelector('.blend-bar-fill');
+    const num = el.querySelector('.blend-bar-num');
+    if(bar) bar.style.width = value + '%';
+    if(num) num.textContent = value;
+  }
+
+  function clearBlendReadout(){
+    const panel = document.getElementById('blendPanel');
+    if(panel) panel.hidden = true;
+  }
+
+  // 合成画像のどこが目立つか（輪郭・背景との明暗差）をヒートマップで重ねる
+  function drawDetectView(w, h){
+    const compData = cctx.getImageData(0, 0, w, h);
+    const envData = envOnlyCtx.getImageData(0, 0, w, h).data;
+    const map = DetectMap.build(compData.data, envData, w, h, { radius: 8 });
+    lastDetectScore = DetectMap.detectScore(map.mean);
+    // ヒートマップ（黒→赤→黄）を半透明で重ねる
+    const out = cctx.createImageData(w, h);
+    for(let p=0;p<map.heat.length;p++){
+      const v = map.heat[p] / 255;
+      const i = p * 4;
+      out.data[i]   = Math.min(255, v * 2 * 255);
+      out.data[i+1] = Math.max(0, (v - 0.5) * 2) * 255;
+      out.data[i+2] = 0;
+      out.data[i+3] = Math.round(v * 200);
+    }
+    // いったん別キャンバスに描いて重ねる
+    const tmp = document.createElement('canvas');
+    tmp.width = w; tmp.height = h;
+    tmp.getContext('2d').putImageData(out, 0, 0);
+    cctx.drawImage(tmp, 0, 0);
+    const scoreEl = document.getElementById('detectScore');
+    if(scoreEl) scoreEl.textContent = String(lastDetectScore);
   }
 
   // ===== Pattern generators =====
@@ -1141,6 +1224,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const img = new Image();
     img.onload = () => {
       envImage = img;
+      const extractBtn = document.getElementById('extractPalette');
+      if(extractBtn) extractBtn.disabled = false;
       draw();
       // Revoke object URL after loading if it was a blob
       if(isFile){
@@ -1197,6 +1282,40 @@ document.addEventListener('DOMContentLoaded', () => {
     enableEdgeDetectionCheckbox.addEventListener('change', (e) => {
       edgeDetectionEnabled = e.target.checked;
       draw();
+    });
+  }
+
+  // 検出ビュー（目立つ場所のヒートマップ）
+  const enableDetectViewCheckbox = document.getElementById('enableDetectView');
+  if(enableDetectViewCheckbox){
+    enableDetectViewCheckbox.addEventListener('change', (e) => {
+      detectViewEnabled = e.target.checked;
+      if(!detectViewEnabled){
+        const scoreEl = document.getElementById('detectScore');
+        if(scoreEl) scoreEl.textContent = '';
+      }
+      draw();
+    });
+  }
+
+  // 環境画像から色を抽出してパレットに入れる
+  const extractPaletteBtn = document.getElementById('extractPalette');
+  if(extractPaletteBtn){
+    extractPaletteBtn.addEventListener('click', () => {
+      if(!envImage) return;
+      // 環境画像を作業用キャンバスに縮小して描き、画素から代表色を取る
+      const tw = 160, th = Math.max(1, Math.round(160 * (envImage.naturalHeight || envImage.height) / (envImage.naturalWidth || envImage.width)));
+      const tmp = document.createElement('canvas');
+      tmp.width = tw; tmp.height = th;
+      const tctx = tmp.getContext('2d');
+      drawImageCover(tctx, envImage, 0, 0, tw, th);
+      const data = tctx.getImageData(0, 0, tw, th).data;
+      const colors = PaletteExtract.extract(data, 6, { step: 1 });
+      if(colors.length){
+        paletteEl.value = colors.join(', ');
+        updatePalettePreview();
+        draw();
+      }
     });
   }
 
