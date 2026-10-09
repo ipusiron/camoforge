@@ -105,6 +105,8 @@ Lightweight 2D Perlin noise implementation. Uses deterministic shuffle seeded by
 4. Color vision filter and edge detection applied as post-processing
 5. Export uses whichever canvas is appropriate for current view
 
+`draw()` = `renderPattern()` (the heavy per-pixel pattern generation) + `composite(withDetect)` (background/overlay blend, color vision, detect view, edge) + `updatePresetCompare()`. Only pattern-changing inputs (scale/contrast/brightness/palette) call `draw()`; overlay-alpha and the "overlay" toggle call `recomposite()`, which reuses the existing `patternCanvas` and only re-runs `composite()` (no pattern regen, no preset re-score). Slider input is coalesced to one render per animation frame via `schedule()`, and while dragging overlay alpha the heavy detect view is skipped (`composite(false)`) and recomputed ~160ms after you stop. A full `draw()` was ~300-600ms per input before; the alpha path is now effectively instant.
+
 ## Development Commands
 
 **Run locally**:
