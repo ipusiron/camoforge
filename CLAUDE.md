@@ -14,7 +14,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Pattern Generation (js/main.js)
 
-Five pattern generators, all using Canvas 2D API. Each function uses a global `patternSeed` variable to generate deterministic patterns that only change when the "Regenerate" button is clicked.
+Six pattern generators, all using Canvas 2D API. Each uses a global `patternSeed` so patterns only change when the "Regenerate" button is clicked. Pure, DOM-free helpers live in separate modules loaded before main.js:
+- `js/color-utils.js` (`CamoColor`): hexToRgb (3-digit aware — the old duplicate turned #RGB black), rgbToHex, shade, sanitizeColorInput, parsePalette, mix, luminance. Tested with node.
+- `js/cable-plan.js` (`CableBundle`): builds the cable-bundle layout (cables with width/color/highlight/shadow/meander points/depth, plus ties) deterministically from a seeded PRNG (mulberry32, not Perlin). `drawCableBundle` in main.js renders the plan. Tested with node.
+- `js/perlin.js` (`Perlin`): noise for the other patterns (its table is seeded by Math.random at load, so it is not reproducible across loads).
 
 1. **drawBlackMatte** (js/main.js:627-677)
    - Matte black texture using multi-octave Perlin noise with vignetting
@@ -25,14 +28,9 @@ Five pattern generators, all using Canvas 2D API. Each function uses a global `p
      - `palette`: First color used as base (defaults to black)
    - Uses `patternSeed` for deterministic offset
 
-2. **drawCableBundle** (js/main.js:679-714)
-   - Vertical stripe patterns simulating bundled cables
-   - Parameters used:
-     - `scale`: Number of cable stripes (8-300 input → 8-25 stripes)
-     - `bright`: Background color brightness
-     - `contrast`: Gradient shading intensity
-     - `palette`: Cable colors (cycles through palette for each stripe)
-   - Uses `patternSeed` for deterministic Perlin noise positioning
+2. **drawCableBundle**
+   - A cable bundle: several cables with varied width and color, drawn with meander, overlap (depth), a specular highlight and cable ties. The layout is `CableBundle.build(...)` (js/cable-plan.js); the body outline is a quadratic path from the centerline control points.
+   - Parameters: `scale` → cable count (6-28), `contrast` → highlight and shadow strength, `bright` → background brightness, `palette` → cable colors (cycled, each tinted a little).
 
 3. **drawHwPanel** (js/main.js:716-773)
    - Grid-based hardware panel with vent slits and screws
