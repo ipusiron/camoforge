@@ -30,7 +30,7 @@ test('インラインのイベントハンドラーとinline scriptがない', (
 test('スクリプトを依存の順で読み込む（color-utils → perlin → cable-plan → main）', () => {
   const order = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
   assert.deepEqual(order, ['js/color-utils.js', 'js/perlin.js', 'js/cable-plan.js',
-    'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/env-presets.js', 'js/main.js']);
+    'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/env-presets.js', 'js/detect-cues.js', 'js/main.js']);
 });
 
 test('パターンタイプは6つで、ハードウェアパネルが有効', () => {
