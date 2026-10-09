@@ -5,13 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CamoForge — Camouflage Pattern Generator</title>
 
-  <!-- Security Headers (meta tags for client-side enforcement) -->
-  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
-  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta name="referrer" content="no-referrer" />
 
-  <!-- CSP: Allow inline styles and scripts (required for this app), but restrict other resources -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'self';" />
+  <!-- CSP: スクリプトは自分のものだけ。style 属性のため style だけ 'unsafe-inline' を残す -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self';" />
 
   <link rel="stylesheet" href="style.css" />
 
@@ -28,7 +25,7 @@
   <header class="site-header">
     <div class="header-inner">
       <h1>CamoForge</h1>
-      <p class="subtitle">Camouflage Designs Generator — カモフラージュデザイン生成ツール</p>
+      <p class="subtitle">Camouflage Pattern Generator — カモフラージュデザイン生成ツール</p>
       <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
         <span class="theme-icon">☀️</span>
       </button>
@@ -57,6 +54,7 @@
                 <option value="military">軍用迷彩風（ノイズ）</option>
                 <option value="digital">デジタル迷彩（ピクセル）</option>
                 <option value="cable">ケーブル群（ストライプ）</option>
+                <option value="hardware">ハードウェアパネル（グリッド）</option>
                 <option value="black-matte">漆黒マット（ビネット）</option>
                 <option value="custom">カスタムノイズ</option>
               </select>
@@ -162,8 +160,8 @@
               <canvas id="compositeCanvas" width="1280" height="720" aria-label="composite preview"></canvas>
               <div class="comparison-slider">
                 <div class="slider-line"></div>
-                <div class="slider-handle">
-                  <div class="slider-handle-icon">⬌</div>
+                <div class="slider-handle" role="slider" tabindex="0" aria-label="比較スライダー" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                  <div class="slider-handle-icon" aria-hidden="true">⬌</div>
                 </div>
               </div>
             </div>
@@ -178,9 +176,9 @@
                 色覚シミュレーション
                 <select id="colorVisionMode" class="input">
                   <option value="normal">通常視覚</option>
-                  <option value="protanopia">1型色覚（赤弱 / Protanopia）</option>
-                  <option value="deuteranopia">2型色覚（緑弱 / Deuteranopia）</option>
-                  <option value="tritanopia">3型色覚（青弱 / Tritanopia）</option>
+                  <option value="protanopia">1型2色覚（Protanopia）</option>
+                  <option value="deuteranopia">2型2色覚（Deuteranopia）</option>
+                  <option value="tritanopia">3型2色覚（Tritanopia）</option>
                   <option value="monochrome">モノクロ（全色盲）</option>
                 </select>
               </label>
@@ -326,7 +324,9 @@
     </div>
   </footer>
 
+  <script src="js/color-utils.js"></script>
   <script src="js/perlin.js"></script>
+  <script src="js/cable-plan.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

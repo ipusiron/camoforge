@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const PATTERN_TYPE_MAP = {
     'military': 'custom-noise',
     'cable': 'cable-bundle',
+    'hardware': 'hw-panel',
     'black-matte': 'black-matte',
     'digital': 'digital-camo',
     'custom': 'custom-noise'
@@ -53,26 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const PATTERN_PRESETS = {
     'military': ['military_camouflage'],
     'cable': ['cable_bundles'],
+    'hardware': ['hardware_panels'],
     'black-matte': ['black_matte'],  // 漆黒マット専用（単色の黒系のみ）
     'digital': ['digital_camouflage'],
     'custom': ['military_camouflage', 'cable_bundles', 'hardware_panels', 'office_backgrounds']
   };
 
   // ===== Helpers =====
-  function parsePalette(text){
-    return text.split(',').map(s => s.trim()).filter(Boolean).map(sanitizeColorInput);
-  }
+  const parsePalette = CamoColor.parsePalette;
 
-  function sanitizeColorInput(color){
-    // Allow only hex colors (#RGB or #RRGGBB) and basic CSS color names
-    const hexPattern = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
-    if(hexPattern.test(color)){
-      return color;
-    }
-    // Fallback to black if invalid
-    console.warn(`Invalid color input: ${color}, using #000000`);
-    return '#000000';
-  }
+  // 色の検証も CamoColor（js/color-utils.js）に集約した。
+  const sanitizeColorInput = CamoColor.sanitizeColorInput;
 
   function randomInt(min, max){
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -227,24 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return imageData;
   }
 
-  function hexToRgb(hex){
-    hex = hex.replace('#','');
-    if(hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
-    return {
-      r: parseInt(hex.substring(0,2),16),
-      g: parseInt(hex.substring(2,4),16),
-      b: parseInt(hex.substring(4,6),16)
-    };
-  }
-  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-  function shade(hex, percent){
-    const c = hexToRgb(hex);
-    const p = percent/100;
-    const r = Math.round(c.r*(1+p));
-    const g = Math.round(c.g*(1+p));
-    const b = Math.round(c.b*(1+p));
-    return `rgb(${clamp(r,0,255)},${clamp(g,0,255)},${clamp(b,0,255)})`;
-  }
+  // 色のユーティリティは js/color-utils.js（CamoColor）に集約した。
+  // 以前は hexToRgb がこのファイルに2つあり、後勝ちの版が3桁HEX（#RGB）を黒にしていた。
+  const hexToRgb = CamoColor.hexToRgb;
+  const clamp = CamoColor.clamp;
+  const shade = CamoColor.shade;
   // cover draw (preserve aspect, crop overflow)
   function drawImageCover(ctx, img, x, y, w, h){
     const iw = img.naturalWidth || img.width;
@@ -306,27 +285,11 @@ document.addEventListener('DOMContentLoaded', () => {
     tempColor: ''
   };
 
-  // HEX to RGB conversion
-  function hexToRgb(hex){
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : { r: 0, g: 0, b: 0 };
-  }
-
-  // RGB to HEX conversion
-  function rgbToHex(r, g, b){
-    return '#' + [r, g, b].map(x => {
-      const hex = x.toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    }).join('');
-  }
+  // hexToRgb は CamoColor の1つを使う（上で定義済み）。rgbToHex も CamoColor から。
+  const rgbToHex = CamoColor.rgbToHex;
 
   // Update color preview and sliders
   function updateColorPickerUI(hexColor){
-    const modal = document.getElementById('colorPickerModal');
     const previewBox = document.getElementById('colorPreviewBox');
     const hexInput = document.getElementById('colorHexInput');
     const redSlider = document.getElementById('colorRedSlider');
@@ -370,6 +333,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Show modal
     modal.style.display = 'flex';
+    const hexInput = document.getElementById('colorHexInput');
+    if(hexInput) hexInput.focus();
   }
 
   // Close color picker modal
@@ -416,6 +381,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if(e.target === modal){
         cancelColorChange();
       }
+    });
+
+    // Escape キーで閉じる
+    modal.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape'){ cancelColorChange(); }
     });
 
     // RGB sliders
@@ -676,38 +646,76 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.globalCompositeOperation = 'source-over';
   }
 
-  function drawCableBundle(ctx,w,h,scale,contrast,bright,palette){
-    // 束ねられたケーブルを思わせる縦ストライプ＋わずかな蛇行
-    // グローバルシードを使用（再生成ボタンでのみ変化）
-    const randomOffset = patternSeed;
+  // 1本のケーブルの輪郭（中心線 points を左右に width/2 ふくらませた帯）をパスにする。
+  function cablePath(ctx, points, width){
+    const half = width / 2;
+    ctx.beginPath();
+    // 左側を上から下へ
+    ctx.moveTo(points[0].x - half, points[0].y);
+    for(let k=1;k<points.length;k++){
+      const prev = points[k-1], cur = points[k];
+      const mx = (prev.x + cur.x)/2, my = (prev.y + cur.y)/2;
+      ctx.quadraticCurveTo(prev.x - half, prev.y, mx - half, my);
+    }
+    ctx.lineTo(points[points.length-1].x - half, points[points.length-1].y);
+    // 右側を下から上へ
+    ctx.lineTo(points[points.length-1].x + half, points[points.length-1].y);
+    for(let k=points.length-1;k>0;k--){
+      const prev = points[k], cur = points[k-1];
+      const mx = (prev.x + cur.x)/2, my = (prev.y + cur.y)/2;
+      ctx.quadraticCurveTo(prev.x + half, prev.y, mx + half, my);
+    }
+    ctx.closePath();
+  }
 
-    // 明るさパラメーターを背景色に反映
-    const baseBrightness = clamp(11 + Math.round(bright * 15), 0, 40);
-    const bgColor = `rgb(${baseBrightness},${baseBrightness},${baseBrightness})`;
-    ctx.fillStyle = bgColor;
+  function drawCableBundle(ctx,w,h,scale,contrast,bright,palette){
+    // 束ねられたケーブルを、太さ・色・光沢・蛇行・重なり・結束バンドで描く。
+    // 配置の計画は js/cable-plan.js（CableBundle）が作る。シードで決まるので再現できる。
+    const plan = CableBundle.build({
+      width: w, height: h, seed: patternSeed,
+      scale: scale, contrast: contrast, bright: bright, palette: palette
+    });
+
+    ctx.fillStyle = plan.background;
     ctx.fillRect(0,0,w,h);
 
-    // スケールパラメーターでストライプ数を調整（8-300 → 8-25本）
-    const stripes = Math.max(8, Math.min(25, Math.floor(scale / 12)));
-    for(let i=0;i<stripes;i++){
-      const baseX = (i/stripes)*w + Perlin.noise2((i+randomOffset)*0.3, (i+randomOffset)*0.1)*12;
-      const width = Math.max(6, w/stripes*0.95 + Perlin.noise2(i+randomOffset,10+randomOffset)*20);
-      const color = palette[i % palette.length] || (i%2?'#111':'#222');
-      ctx.save();
-      const angle = Perlin.noise2(i+randomOffset, (i+randomOffset)*0.5) * 0.08;
-      ctx.translate(baseX, 0);
-      ctx.rotate(angle);
-      const grad = ctx.createLinearGradient(0,0,width,0);
-      grad.addColorStop(0, color);
-      grad.addColorStop(0.5, shade(color, -8*contrast));
-      grad.addColorStop(1, shade(color, -16*contrast));
+    // 各ケーブル（奥から手前へ）
+    plan.cables.forEach(cable => {
+      // 本体（左→右の明暗で丸みを出す）
+      cablePath(ctx, cable.points, cable.width);
+      const cx = cable.x;
+      const grad = ctx.createLinearGradient(cx - cable.width/2, 0, cx + cable.width/2, 0);
+      grad.addColorStop(0, cable.shadow);
+      grad.addColorStop(0.5, cable.color);
+      grad.addColorStop(1, cable.shadow);
       ctx.fillStyle = grad;
-      ctx.fillRect(-10, -30, width + 20, h + 60);
+      ctx.fill();
+
+      // 光沢（中心より少し左の細い明るい帯）。ケーブルを見分ける最大の手がかり
+      ctx.save();
+      ctx.clip(); // 本体のパスの内側にだけ描く
+      ctx.globalAlpha = clamp(0.5 + contrast * 0.2, 0.2, 0.95);
+      cablePath(ctx, cable.points.map(p => ({ x: p.x + cable.highlightOffset, y: p.y })), cable.highlightWidth);
+      ctx.fillStyle = cable.highlight;
+      ctx.fill();
       ctx.restore();
-    }
+    });
+
+    // 結束バンド（横帯）。ケーブルをまたいで束ねているように見せる
+    plan.ties.forEach(tie => {
+      ctx.fillStyle = tie.color;
+      roundRect(ctx, -4, tie.y, w + 8, tie.height, Math.min(6, tie.height/2), true, false);
+      // 上端の細いハイライトで帯の立体感を出す
+      ctx.fillStyle = shade(tie.color, 45);
+      ctx.fillRect(-4, tie.y, w + 8, Math.max(1, tie.height * 0.14));
+      // 留め具（結束バンドのヘッド）
+      ctx.fillStyle = shade(tie.color, 28);
+      roundRect(ctx, tie.buckleX, tie.y - tie.height*0.12, tie.height*1.1, tie.height*1.24, 3, true, false);
+    });
+
     // 微細ノイズ（明るさに応じて調整）
     ctx.globalCompositeOperation = 'overlay';
-    const noiseAlpha = clamp(0.12 - bright * 0.05, 0.02, 0.25);
+    const noiseAlpha = clamp(0.1 - bright * 0.04, 0.02, 0.2);
     ctx.fillStyle = `rgba(0,0,0,${noiseAlpha})`;
     ctx.fillRect(0,0,w,h);
     ctx.globalCompositeOperation = 'source-over';
@@ -765,9 +773,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.globalCompositeOperation = 'overlay';
     ctx.fillStyle = 'rgba(255,255,255,0.01)';
     const scratchCount = Math.round(600 * contrast);
+    const srand = CableBundle.rng(Math.floor(patternSeed*1000)+7);
     for(let i=0;i<scratchCount;i++){
-      const rx = Math.random()*w, ry = Math.random()*h;
-      ctx.fillRect(rx, ry, Math.random()*1.5, Math.random()*0.2);
+      const rx = srand()*w, ry = srand()*h;
+      ctx.fillRect(rx, ry, srand()*1.5, srand()*0.2);
     }
     ctx.globalCompositeOperation = 'source-over';
   }
@@ -985,7 +994,16 @@ document.addEventListener('DOMContentLoaded', () => {
       comparisonSlider.style.left = sliderPosition + '%';
     }
     if(comp){
-      comp.style.clipPath = `inset(0 0 0 ${sliderPosition}%)`;
+      // スライダーはラッパー基準、clip-path はキャンバス基準なので、
+      // パディングのぶんを補正しないと端で最大12pxずれる。
+      const wrapRect = comparisonWrap.getBoundingClientRect();
+      const compRect = comp.getBoundingClientRect();
+      const xPx = wrapRect.width * sliderPosition / 100;
+      const clipPct = Math.max(0, Math.min(100, (xPx - (compRect.left - wrapRect.left)) / compRect.width * 100));
+      comp.style.clipPath = `inset(0 0 0 ${clipPct}%)`;
+    }
+    if(sliderHandle){
+      sliderHandle.setAttribute('aria-valuenow', String(Math.round(sliderPosition)));
     }
   }
 
@@ -1024,6 +1042,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('touchend', () => {
       isDragging = false;
+    });
+
+    // キーボード（左右・上下の矢印で5%、Home/End で端へ）
+    sliderHandle.addEventListener('keydown', (e) => {
+      let next = sliderPosition;
+      if(e.key === 'ArrowLeft' || e.key === 'ArrowDown') next -= 5;
+      else if(e.key === 'ArrowRight' || e.key === 'ArrowUp') next += 5;
+      else if(e.key === 'Home') next = 0;
+      else if(e.key === 'End') next = 100;
+      else return;
+      e.preventDefault();
+      updateSliderPosition(next);
     });
   }
 
@@ -1096,15 +1126,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Palette input updates
-  paletteEl.addEventListener('input', () => {
-    updatePalettePreview();
-    draw();
-  });
-
   exportBtn.addEventListener('click', () => {
-    const useCanvas = (envImage && showOverlay.checked) ? comp : canvas;
-    const url = useCanvas.toDataURL('image/png');
+    // 生成タブのプレビューはパターン単体なので、保存も patternCanvas にそろえる。
+    // 背景と合成した画像は「環境チェック」タブの exportComposite で保存する。
+    const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = url;
     a.download = 'camoforge_pattern.png';
