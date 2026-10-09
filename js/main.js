@@ -503,7 +503,29 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   // パターンの生成（パターンの設定が変わったときだけでよい重い処理）を分ける。
   // 重ね合わせ透明度のように合成の見た目だけ変える操作は composite() だけを呼ぶ（再生成しない）。
-  function renderPattern(){
+  // 指定したコンテキストにパターンを描く（解像度に依らず使えるよう切り出す）。
+  function paintPattern(c, w, h, preset, scale, contrast, bright, palette){
+    c.clearRect(0,0,w,h);
+    c.fillStyle = '#000';
+    c.fillRect(0,0,w,h);
+    if(preset === 'black-matte') {
+      drawBlackMatte(c,w,h,scale,contrast,bright,palette);
+    } else if(preset === 'cable-bundle') {
+      drawCableBundle(c,w,h,scale,contrast,bright,palette);
+    } else if(preset === 'hw-panel') {
+      drawHwPanel(c,w,h,scale,contrast,bright,palette);
+    } else if(preset === 'digital-camo') {
+      drawDigitalCamo(c,w,h,scale,contrast,bright,palette);
+    } else {
+      drawCustomNoise(c,w,h,scale,contrast,bright,palette);
+    }
+  }
+
+  // ドラッグ中の仮描画用の縮小キャンバス
+  const patternTmp = document.createElement('canvas');
+
+  // パターンを patternCanvas に描く。preview=true のときは縮小解像度で描いて拡大する（ドラッグ中に軽くする）。
+  function renderPattern(preview){
     const w = canvas.width  = 1280;
     const h = canvas.height = 720;
     comp.width = w; comp.height = h;
@@ -512,12 +534,6 @@ document.addEventListener('DOMContentLoaded', () => {
       envOnlyCanvas.height = h;
     }
 
-    // Clear pattern canvas
-    ctx.clearRect(0,0,w,h);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0,0,w,h);
-
-    // Get current parameters from UI
     const patternType = patternTypeEl.value;
     const preset   = PATTERN_TYPE_MAP[patternType] || 'custom-noise';
     const scale    = Number(scaleEl.value);
@@ -525,17 +541,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const bright   = Number(brightEl.value);
     const palette  = parsePalette(paletteEl.value);
 
-    // Draw camouflage pattern based on selected type
-    if(preset === 'black-matte') {
-      drawBlackMatte(ctx,w,h,scale,contrast,bright,palette);
-    } else if(preset === 'cable-bundle') {
-      drawCableBundle(ctx,w,h,scale,contrast,bright,palette);
-    } else if(preset === 'hw-panel') {
-      drawHwPanel(ctx,w,h,scale,contrast,bright,palette);
-    } else if(preset === 'digital-camo') {
-      drawDigitalCamo(ctx,w,h,scale,contrast,bright,palette);
+    if(preview){
+      const f = 0.5;
+      const rw = Math.round(w * f), rh = Math.round(h * f);
+      // ケーブルは本数（scale）基準なので scale を変えない。ノイズ・格子は px サイズ基準なので scale を縮尺に合わせる。
+      const pscale = (preset === 'cable-bundle') ? scale : Math.max(1, scale * f);
+      patternTmp.width = rw; patternTmp.height = rh;
+      paintPattern(patternTmp.getContext('2d'), rw, rh, preset, pscale, contrast, bright, palette);
+      ctx.clearRect(0,0,w,h);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(patternTmp, 0, 0, rw, rh, 0, 0, w, h);
     } else {
-      drawCustomNoise(ctx,w,h,scale,contrast,bright,palette);
+      paintPattern(ctx, w, h, preset, scale, contrast, bright, palette);
     }
   }
 
@@ -618,11 +635,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // パターンの生成＋合成＋プリセット採点をまとめて行う（パターンが変わったとき）。
+  // 合成・プリセット採点は環境タブでしか見えないので、そのタブのときだけ行う（生成タブを軽くする）。
   function draw(){
     renderPattern();
-    composite(true);
-    // 環境プリセットとの馴染み度の一覧を更新（パターンが変わるたび）
-    updatePresetCompare();
+    const envTab = document.getElementById('tab-environment');
+    if(envTab && envTab.classList.contains('active')){
+      composite(true);
+      updatePresetCompare();
+    }
   }
 
   // ===== 描画のスケジュール（スライダーのドラッグをフレームごとにまとめる） =====
@@ -650,11 +670,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // パターンの設定スライダー用。ドラッグ中は縮小解像度でプレビューし、止まったら原寸で描く。
+  let patternSettleTimer = null;
+  function recomputePattern(preview){
+    renderPattern(preview);
+    const envTab = document.getElementById('tab-environment');
+    if(envTab && envTab.classList.contains('active')){
+      composite(!preview);          // プレビュー中は重い検出ビューを省く
+      if(!preview) updatePresetCompare();
+    }
+  }
+  function schedulePattern(){
+    schedule(() => recomputePattern(true));
+    clearTimeout(patternSettleTimer);
+    patternSettleTimer = setTimeout(() => recomputePattern(false), 180);
+  }
+
   // ===== 馴染み度の評価と検出ビュー（第2弾） =====
   let detectViewEnabled = false;
   let lastDetectScore = null;
 
-  const GRADE_LABEL = { high: 'よく馴染む', medium: 'まあ馴染む', low: 'やや目立つ', poor: '目立つ' };
+  const T = (k) => (window.I18N ? window.I18N.t(k) : k);
+  const curLang = () => (window.I18N ? window.I18N.lang : 'ja');
 
   // パターン（patternCanvas）と背景（envOnlyCanvas）の色・明るさ・コントラストのずれから馴染み度を出す
   function updateBlendReadout(w, h){
@@ -673,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const grade = document.getElementById('blendGrade');
     if(total) total.textContent = String(r.blend);
     if(grade){
-      grade.textContent = GRADE_LABEL[BlendScore.grade(r.blend)] || '';
+      grade.textContent = T('grade.' + BlendScore.grade(r.blend));
     }
   }
 
@@ -694,7 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 合成画像のどこが目立つかをヒートマップで重ねる。
   // 総合（色＋輪郭）は第2弾のDetectMap、個別の手がかり（輪郭・光沢・直線・色の外れ）は第4弾のDetectCues。
   let detectCue = 'combined';
-  const CUE_LABEL = { combined: '総合', edge: '輪郭', gloss: '光沢', line: '直線', color: '色の外れ' };
+  // 手がかりの短い名前は I18N の cueShort.* を使う
 
   // 検出ビューは縮小解像度で計算する（原寸1280×720だと重い）。
   // 320×180でDetectMap/DetectCuesを出し、ヒートマップを拡大して重ねる。半径は縮尺に合わせる。
@@ -774,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
       row.className = 'detect-cue-row' + (key === detectCue ? ' current' : '');
       const name = document.createElement('span');
       name.className = 'detect-cue-name';
-      name.textContent = CUE_LABEL[key];
+      name.textContent = T('cueShort.' + key);
       const track = document.createElement('span');
       track.className = 'detect-cue-track';
       const fill = document.createElement('span');
@@ -806,8 +843,8 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.type = 'button';
       btn.className = 'preset-btn';
       btn.dataset.preset = p.id;
-      btn.title = p.descJa;
-      btn.textContent = p.nameJa;
+      btn.title = curLang() === 'en' ? p.nameEn : p.descJa;
+      btn.textContent = curLang() === 'en' ? p.nameEn : p.nameJa;
       btn.addEventListener('click', () => loadPreset(p.id));
       presetListEl.appendChild(btn);
     }
@@ -850,14 +887,14 @@ document.addEventListener('DOMContentLoaded', () => {
     presetCompareEl.textContent = '';
     const title = document.createElement('p');
     title.className = 'preset-compare-title';
-    title.textContent = 'このパターンの馴染み度（背景別）';
+    title.textContent = T('presetCompareTitle');
     presetCompareEl.appendChild(title);
     rows.forEach((r, idx) => {
       const row = document.createElement('div');
       row.className = 'preset-row' + (idx === 0 ? ' best' : '') + (r.id === activePresetId ? ' current' : '');
       const name = document.createElement('span');
       name.className = 'preset-row-name';
-      name.textContent = r.nameJa;
+      name.textContent = curLang() === 'en' ? r.nameEn : r.nameJa;
       const track = document.createElement('span');
       track.className = 'preset-row-track';
       const fill = document.createElement('span');
@@ -1397,12 +1434,12 @@ document.addEventListener('DOMContentLoaded', () => {
     draw();
   });
 
-  // パターンの設定（再生成が必要）はフレームごとにまとめて draw() する
+  // パターンの設定（再生成が必要）。ドラッグ中はプレビュー、止まったら原寸（schedulePattern）
   [scaleEl, contrastEl, brightEl, paletteEl].forEach(el=>{
     el.addEventListener('input', () => {
       updateRangeValues();
       updatePalettePreview();
-      schedule(draw);
+      schedulePattern();
     });
   });
 
@@ -1439,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     img.onerror = () => {
       if(isFile){
-        alert('画像の読み込みに失敗しました');
+        alert(T('alert.loadFailed'));
         URL.revokeObjectURL(img.src);
         envUpload.value = ''; // Reset input
       } else {
@@ -1456,7 +1493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Validate file type (images only)
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
     if(!validTypes.includes(f.type)){
-      alert('画像ファイルのみアップロード可能です (JPEG, PNG, GIF, WebP, BMP)');
+      alert(T('alert.imageOnly'));
       envUpload.value = ''; // Reset input
       return;
     }
@@ -1464,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if(f.size > maxSize){
-      alert('ファイルサイズが大きすぎます（最大10MB）');
+      alert(T('alert.tooLarge'));
       envUpload.value = ''; // Reset input
       return;
     }
@@ -1567,6 +1604,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateRangeValues();
   updatePalettePreview();
   buildPresetButtons();
+  if(window.I18N){ window.I18N.onChange(() => { buildPresetButtons(); highlightActivePreset(); draw(); }); }
   draw();
 
   // Load default background image
