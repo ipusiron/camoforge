@@ -39,3 +39,5 @@ secrets/
 # User data (if any)
 uploads/
 user_data/
+# ローカルの退避（リポジトリーに含めない）
+backups/

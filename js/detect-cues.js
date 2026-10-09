@@ -51,7 +51,7 @@
     var out = new Float32Array(w * h);
     for (var p = 0; p < w * h; p++) {
       var local = lum[p] - mean[p];        // 周囲より明るいか
-      var bright = (lum[p] - 160) / 95;     // 全体でも明るいか（160以上で効く）
+      var bright = (lum[p] - 130) / 95;     // 全体でも明るいか（130以上で効く）
       var v = local * Math.max(0, Math.min(1, bright));
       out[p] = v > 0 ? v : 0;
     }

@@ -210,6 +210,21 @@
                 <input id="enableDetectView" type="checkbox">
                 <span>検出ビュー（目立つ場所をヒートマップで表示）<span class="detect-score" id="detectScore"></span></span>
               </label>
+
+              <div class="detect-cue-controls" id="detectCueControls" hidden>
+                <label class="field">
+                  見る手がかり
+                  <select id="detectCue" class="input">
+                    <option value="combined">総合（色＋輪郭）</option>
+                    <option value="edge">輪郭（シルエット）</option>
+                    <option value="gloss">光沢（ハイライト）</option>
+                    <option value="line">直線（人工物の縁）</option>
+                    <option value="color">色の外れ</option>
+                  </select>
+                </label>
+                <div class="detect-breakdown" id="detectBreakdown" aria-live="polite"></div>
+                <p class="detect-hint">色を背景に合わせても、輪郭・光沢・直線が残ると見つかります。手がかりごとに切り替えて、どこが弱点かを確かめられます。検知・点検の着眼点になります。</p>
+              </div>
             </div>
 
             <div class="preview-footer">

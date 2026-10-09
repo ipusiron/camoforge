@@ -79,3 +79,11 @@ test('環境プリセット比較のUIがある（第3弾）', () => {
   assert.ok(html.includes('id="presetCompare"'));
   assert.ok(html.includes('環境プリセット'));
 });
+
+test('検出ビューの手がかり切替UIがある（第4弾）', () => {
+  assert.ok(html.includes('id="detectCue"'));
+  assert.ok(html.includes('id="detectBreakdown"'));
+  const block = html.slice(html.indexOf('id="detectCue"'), html.indexOf('</select>', html.indexOf('id="detectCue"')));
+  const values = [...block.matchAll(/<option value="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(values, ['combined', 'edge', 'gloss', 'line', 'color']);
+});

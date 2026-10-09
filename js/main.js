@@ -654,29 +654,80 @@ document.addEventListener('DOMContentLoaded', () => {
     if(panel) panel.hidden = true;
   }
 
-  // 合成画像のどこが目立つか（輪郭・背景との明暗差）をヒートマップで重ねる
+  // 合成画像のどこが目立つかをヒートマップで重ねる。
+  // 総合（色＋輪郭）は第2弾のDetectMap、個別の手がかり（輪郭・光沢・直線・色の外れ）は第4弾のDetectCues。
+  let detectCue = 'combined';
+  const CUE_LABEL = { combined: '総合', edge: '輪郭', gloss: '光沢', line: '直線', color: '色の外れ' };
+
   function drawDetectView(w, h){
     const compData = cctx.getImageData(0, 0, w, h);
     const envData = envOnlyCtx.getImageData(0, 0, w, h).data;
+
+    // 手がかりごとのスコアの内訳を出す（総合はDetectMap、個別はDetectCues）
     const map = DetectMap.build(compData.data, envData, w, h, { radius: 8 });
-    lastDetectScore = DetectMap.detectScore(map.mean);
+    const combinedScore = DetectMap.detectScore(map.mean);
+    const cues = DetectCues.build(compData.data, envData, w, h, { color: { radius: 8 } });
+
+    // 表示する手がかりのヒート配列を選ぶ
+    let heat;
+    if(detectCue === 'combined'){
+      heat = map.heat;
+      lastDetectScore = combinedScore;
+    } else {
+      heat = cues.cues[detectCue];
+      lastDetectScore = cues.scores[detectCue];
+    }
+
     // ヒートマップ（黒→赤→黄）を半透明で重ねる
     const out = cctx.createImageData(w, h);
-    for(let p=0;p<map.heat.length;p++){
-      const v = map.heat[p] / 255;
+    for(let p=0;p<heat.length;p++){
+      const v = heat[p] / 255;
       const i = p * 4;
       out.data[i]   = Math.min(255, v * 2 * 255);
       out.data[i+1] = Math.max(0, (v - 0.5) * 2) * 255;
       out.data[i+2] = 0;
       out.data[i+3] = Math.round(v * 200);
     }
-    // いったん別キャンバスに描いて重ねる
     const tmp = document.createElement('canvas');
     tmp.width = w; tmp.height = h;
     tmp.getContext('2d').putImageData(out, 0, 0);
     cctx.drawImage(tmp, 0, 0);
+
     const scoreEl = document.getElementById('detectScore');
     if(scoreEl) scoreEl.textContent = String(lastDetectScore);
+    updateDetectBreakdown(combinedScore, cues.scores);
+  }
+
+  // 手がかりごとのスコアを一覧で見せる（いま見ている手がかりを強調）
+  function updateDetectBreakdown(combinedScore, scores){
+    const el = document.getElementById('detectBreakdown');
+    if(!el) return;
+    el.textContent = '';
+    const rows = [
+      ['combined', combinedScore],
+      ['edge', scores.edge],
+      ['gloss', scores.gloss],
+      ['line', scores.line],
+      ['color', scores.color]
+    ];
+    for(const [key, val] of rows){
+      const row = document.createElement('div');
+      row.className = 'detect-cue-row' + (key === detectCue ? ' current' : '');
+      const name = document.createElement('span');
+      name.className = 'detect-cue-name';
+      name.textContent = CUE_LABEL[key];
+      const track = document.createElement('span');
+      track.className = 'detect-cue-track';
+      const fill = document.createElement('span');
+      fill.className = 'detect-cue-fill';
+      fill.style.width = Math.min(100, val) + '%';
+      track.appendChild(fill);
+      const num = document.createElement('span');
+      num.className = 'detect-cue-num';
+      num.textContent = val;
+      row.appendChild(name); row.appendChild(track); row.appendChild(num);
+      el.appendChild(row);
+    }
   }
 
   // ===== 環境プリセット比較（第3弾） =====
@@ -1373,13 +1424,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 検出ビュー（目立つ場所のヒートマップ）
   const enableDetectViewCheckbox = document.getElementById('enableDetectView');
+  const detectCueControls = document.getElementById('detectCueControls');
   if(enableDetectViewCheckbox){
     enableDetectViewCheckbox.addEventListener('change', (e) => {
       detectViewEnabled = e.target.checked;
+      if(detectCueControls) detectCueControls.hidden = !detectViewEnabled;
       if(!detectViewEnabled){
         const scoreEl = document.getElementById('detectScore');
         if(scoreEl) scoreEl.textContent = '';
+        const bd = document.getElementById('detectBreakdown');
+        if(bd) bd.textContent = '';
       }
+      draw();
+    });
+  }
+
+  // 検出ビューで見る手がかりの切り替え（総合・輪郭・光沢・直線・色の外れ）
+  const detectCueSelect = document.getElementById('detectCue');
+  if(detectCueSelect){
+    detectCueSelect.addEventListener('change', (e) => {
+      detectCue = e.target.value;
       draw();
     });
   }

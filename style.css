@@ -1200,3 +1200,15 @@ select#palettePreset optgroup {
 .preset-row.best .preset-row-name { font-weight: 600; }
 .preset-row.best .preset-row-name::after { content: " ◀"; color: var(--accent); }
 .preset-row.current .preset-row-name { color: var(--accent); }
+
+/* ===== 検出ビューの手がかり内訳（第4弾） ===== */
+.detect-cue-controls { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.detect-hint { margin: 8px 0 0; color: var(--muted, #8a93a6); font-size: 12px; line-height: 1.6; }
+.detect-breakdown { margin-top: 10px; }
+.detect-cue-row { display: grid; grid-template-columns: 5em 1fr 2.2em; align-items: center; gap: 8px; margin-bottom: 5px; }
+.detect-cue-name { font-size: 12px; color: var(--text); }
+.detect-cue-track { height: 8px; border-radius: 5px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.detect-cue-fill { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #c83, #e96); transition: width 0.2s; }
+.detect-cue-num { font-size: 12px; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+.detect-cue-row.current .detect-cue-name { color: var(--accent); font-weight: 600; }
+.detect-cue-row.current .detect-cue-fill { background: linear-gradient(90deg, #3a7, #6c6); }
