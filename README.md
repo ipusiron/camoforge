@@ -34,6 +34,8 @@ hub: true
 
 # CamoForge - カモフラージュデザイン生成ツール
 
+**日本語** | [English](README.en.md)
+
 ![GitHub Repo stars](https://img.shields.io/github/stars/ipusiron/camoforge?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/ipusiron/camoforge?style=social)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ipusiron/camoforge)
@@ -51,6 +53,7 @@ hub: true
 - 環境写真に重ねてプレビュー（アルファ調整、比較スライダー、エッジ検出）
 - 教育用の「座学」タブで背景知識を学習
 - 出力結果をPNGとして保存可能
+- 画面の日英切り替え（右上のトグル）
 
 色覚シミュレーション機能を統合した環境適合性チェック機能により、**色覚多様性（色弱・色覚異常）を持つ観察者の視点で迷彩パターンを評価**できます。
 これはセキュリティ教育・アクセシビリティ・デザイン検証を統合した世界でも稀有な実装といえます。
@@ -469,6 +472,8 @@ camoforge/
 │   ├── detect-map.js      # 目立つ場所のヒートマップ（DOM非依存・テスト対象）
 │   ├── env-presets.js     # 環境プリセットの生成と馴染み度比較（DOM非依存・テスト対象）
 │   ├── detect-cues.js     # 検出の手がかりの分解（輪郭・光沢・直線・色。DOM非依存・テスト対象）
+│   ├── messages.js        # 画面文言の日英辞書
+│   ├── i18n.js            # 画面の日英切り替え
 │   ├── perlin.js          # Perlinノイズ生成ライブラリ
 │   └── main.js            # メインロジック（UI制御、描画、フィルター処理）
 │
@@ -484,6 +489,7 @@ camoforge/
 │   ├── detect-map.test.js # 目立つ場所の検証
 │   ├── env-presets.test.js # 環境プリセットの検証
 │   ├── detect-cues.test.js # 検出の手がかりの検証
+│   ├── messages.test.js   # 日英辞書のキー整合の検証
 │   ├── html.test.js       # index.htmlのCSP・要素の検証
 │   ├── readme.test.js     # READMEの表記の検証
 │   └── format.test.js     # 改行コード・行長などの検証
@@ -534,7 +540,7 @@ npm test
 
 - Node.js 22以上で動く。依存パッケージはない（`node --test`）。
 - GitHub Actionsで、pushとpull requestのたびに自動で実行する。
-- 色のユーティリティ（3桁HEXの展開など）、ケーブル束の計画が同じシードで再現すること、馴染み度の評価、環境画像からの色抽出、目立つ場所のヒートマップ、環境プリセットの生成と馴染み度比較、検出の手がかりの分解（輪郭・光沢・直線・色）、index.htmlのCSPと要素、READMEの表記を検証する。
+- 色のユーティリティ（3桁HEXの展開など）、ケーブル束の計画が同じシードで再現すること、馴染み度の評価、環境画像からの色抽出、目立つ場所のヒートマップ、環境プリセットの生成と馴染み度比較、検出の手がかりの分解（輪郭・光沢・直線・色）、日英辞書のキー整合、index.htmlのCSPと要素、READMEの表記を検証する。
 - 画面の描画やタブ操作はPlaywrightで確かめた（確認用のスクリプトはリポジトリーに含めない）。
 
 ---
