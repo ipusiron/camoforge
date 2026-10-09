@@ -30,7 +30,7 @@ test('インラインのイベントハンドラーとinline scriptがない', (
 test('スクリプトを依存の順で読み込む（color-utils → perlin → cable-plan → main）', () => {
   const order = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
   assert.deepEqual(order, ['js/color-utils.js', 'js/perlin.js', 'js/cable-plan.js',
-    'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/main.js']);
+    'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/env-presets.js', 'js/main.js']);
 });
 
 test('パターンタイプは6つで、ハードウェアパネルが有効', () => {
@@ -71,4 +71,11 @@ test('馴染み度・検出ビュー・色抽出のUIがある', () => {
 test('lang属性とviewportがある', () => {
   assert.match(html, /<html lang="ja"/);
   assert.match(html, /<meta name="viewport"/);
+});
+
+test('環境プリセット比較のUIがある（第3弾）', () => {
+  assert.ok(html.includes('id="presetPanel"'));
+  assert.ok(html.includes('id="presetList"'));
+  assert.ok(html.includes('id="presetCompare"'));
+  assert.ok(html.includes('環境プリセット'));
 });

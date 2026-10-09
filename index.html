@@ -127,6 +127,13 @@
 
             <button id="extractPalette" type="button" class="btn btn-secondary" disabled>環境画像から色を抽出</button>
 
+            <section class="panel preset-panel" id="presetPanel">
+              <h3>環境プリセット</h3>
+              <p class="preset-hint">作り付けの背景にパターンを当てて、同じ迷彩がどの環境でどれだけ馴染むかを比べます。背景を選ぶとプレビューに読み込みます。</p>
+              <div class="preset-list" id="presetList"></div>
+              <div class="preset-compare" id="presetCompare" aria-live="polite"></div>
+            </section>
+
             <div class="overlay-controls">
               <label class="field checkbox-field">
                 <input id="showOverlay" type="checkbox" checked>
@@ -346,6 +353,7 @@
   <script src="js/blend-score.js"></script>
   <script src="js/palette-extract.js"></script>
   <script src="js/detect-map.js"></script>
+  <script src="js/env-presets.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
