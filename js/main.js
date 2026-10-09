@@ -501,8 +501,9 @@ document.addEventListener('DOMContentLoaded', () => {
    * 3. Apply color vision simulation if enabled
    * 4. Apply edge detection if enabled
    */
-  function draw(){
-    // Set canvas dimensions (16:9 aspect ratio)
+  // パターンの生成（パターンの設定が変わったときだけでよい重い処理）を分ける。
+  // 重ね合わせ透明度のように合成の見た目だけ変える操作は composite() だけを呼ぶ（再生成しない）。
+  function renderPattern(){
     const w = canvas.width  = 1280;
     const h = canvas.height = 720;
     comp.width = w; comp.height = h;
@@ -536,6 +537,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       drawCustomNoise(ctx,w,h,scale,contrast,bright,palette);
     }
+  }
+
+  // 合成（背景＋パターンの重ね・色覚・検出・エッジ）だけをやり直す。
+  // withDetect=false のときは重い検出ビューの計算を省く（ドラッグ中に使う）。
+  function composite(withDetect){
+    const w = canvas.width, h = canvas.height;
 
     // Composite pattern with environment image for "Environment Check" tab
     cctx.clearRect(0,0,w,h);
@@ -582,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 馴染み度の評価と検出ビュー（環境画像があるときだけ）。色覚フィルターの前に測る
     if(envImage && envOnlyCtx){
       updateBlendReadout(w, h);
-      if(detectViewEnabled){
+      if(detectViewEnabled && withDetect){
         drawDetectView(w, h);
       }
     } else {
@@ -608,9 +615,39 @@ document.addEventListener('DOMContentLoaded', () => {
       applyEdgeDetection(compImgData, w, h);
       cctx.putImageData(compImgData, 0, 0);
     }
+  }
 
+  // パターンの生成＋合成＋プリセット採点をまとめて行う（パターンが変わったとき）。
+  function draw(){
+    renderPattern();
+    composite(true);
     // 環境プリセットとの馴染み度の一覧を更新（パターンが変わるたび）
     updatePresetCompare();
+  }
+
+  // ===== 描画のスケジュール（スライダーのドラッグをフレームごとにまとめる） =====
+  let rafPending = false;
+  let rafTask = null;
+  function schedule(task){
+    rafTask = task;
+    if(rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      rafPending = false;
+      const t = rafTask; rafTask = null;
+      if(t) t();
+    });
+  }
+
+  // 重ね合わせ透明度・パターンを重ねるの変更は合成だけ更新する（パターンは再生成しない）。
+  // ドラッグ中は重い検出ビューを省き、止まったら更新する。
+  let detectSettleTimer = null;
+  function recomposite(){
+    schedule(() => composite(false));
+    if(detectViewEnabled && envImage){
+      clearTimeout(detectSettleTimer);
+      detectSettleTimer = setTimeout(() => composite(true), 160);
+    }
   }
 
   // ===== 馴染み度の評価と検出ビュー（第2弾） =====
@@ -1338,11 +1375,20 @@ document.addEventListener('DOMContentLoaded', () => {
     draw();
   });
 
-  [scaleEl, contrastEl, brightEl, paletteEl, overlayAlpha, showOverlay].forEach(el=>{
+  // パターンの設定（再生成が必要）はフレームごとにまとめて draw() する
+  [scaleEl, contrastEl, brightEl, paletteEl].forEach(el=>{
     el.addEventListener('input', () => {
       updateRangeValues();
       updatePalettePreview();
-      draw();
+      schedule(draw);
+    });
+  });
+
+  // 重ね合わせ透明度・パターンを重ねるは合成だけ更新する（再生成しない＝軽い）
+  [overlayAlpha, showOverlay].forEach(el=>{
+    el.addEventListener('input', () => {
+      updateRangeValues();
+      recomposite();
     });
   });
 
