@@ -594,6 +594,18 @@ canvas {
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
 }
 
+.blend-panel { margin-top: 14px; }
+.blend-panel h3 { display: flex; align-items: baseline; gap: 4px; }
+.blend-total { font-size: 28px; font-weight: 700; color: var(--accent); margin-left: auto; }
+.blend-total-max { color: var(--muted, #8a93a6); font-size: 14px; }
+.blend-grade { margin: 2px 0 10px; color: var(--muted, #8a93a6); }
+.blend-bar { display: grid; grid-template-columns: 6em 1fr 2.2em; align-items: center; gap: 8px; margin: 6px 0; font-size: 13px; }
+.blend-bar-track { height: 10px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.blend-bar-fill { display: block; height: 100%; background: linear-gradient(90deg, #3a7, #6c6); width: 0; transition: width 0.2s; }
+.blend-bar-num { text-align: right; color: var(--muted, #8a93a6); }
+.blend-hint { font-size: 12px; color: var(--muted, #8a93a6); line-height: 1.6; margin-top: 8px; }
+.detect-score { color: var(--accent); font-weight: 700; margin-left: 4px; }
+
 .slider-handle {
   touch-action: none;
   position: absolute;

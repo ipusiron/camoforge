@@ -18,6 +18,11 @@ Six pattern generators, all using Canvas 2D API. Each uses a global `patternSeed
 - `js/color-utils.js` (`CamoColor`): hexToRgb (3-digit aware — the old duplicate turned #RGB black), rgbToHex, shade, sanitizeColorInput, parsePalette, mix, luminance. Tested with node.
 - `js/cable-plan.js` (`CableBundle`): builds the cable-bundle layout (cables with width/color/highlight/shadow/meander points/depth, plus ties) deterministically from a seeded PRNG (mulberry32, not Perlin). `drawCableBundle` in main.js renders the plan. Tested with node.
 - `js/perlin.js` (`Perlin`): noise for the other patterns (its table is seeded by Math.random at load, so it is not reproducible across loads).
+- `js/blend-score.js` (`BlendScore`): blend score (0-100) from the pattern vs environment color/luminance/contrast stats. DOM-free, tested.
+- `js/palette-extract.js` (`PaletteExtract`): k-means palette extraction from an image's pixels (deterministic init by luminance). DOM-free, tested.
+- `js/detect-map.js` (`DetectMap`): a detectability heatmap from the composite's edges and its difference from the environment's local mean. DOM-free, tested.
+
+The Environment Check tab uses these: updateBlendReadout (BlendScore) shows the blend panel, drawDetectView (DetectMap) overlays the heatmap when 検出ビュー is on, and 環境画像から色を抽出 runs PaletteExtract on the uploaded image and fills the palette.
 
 1. **drawBlackMatte** (js/main.js:627-677)
    - Matte black texture using multi-octave Perlin noise with vignetting

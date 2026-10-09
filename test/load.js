@@ -16,3 +16,6 @@ export function load(file) {
 
 export const color = () => load('js/color-utils.js').CamoColor;
 export const cable = () => { load('js/color-utils.js'); return load('js/cable-plan.js').CableBundle; };
+export const blend = () => load('js/blend-score.js').BlendScore;
+export const extract = () => { load('js/color-utils.js'); return load('js/palette-extract.js').PaletteExtract; };
+export const detect = () => load('js/detect-map.js').DetectMap;

@@ -125,6 +125,8 @@
               <input id="envUpload" type="file" accept="image/*" class="input-file">
             </label>
 
+            <button id="extractPalette" type="button" class="btn btn-secondary" disabled>環境画像から色を抽出</button>
+
             <div class="overlay-controls">
               <label class="field checkbox-field">
                 <input id="showOverlay" type="checkbox" checked>
@@ -145,6 +147,15 @@
                 <li>透明度を調整して視覚的な適合性を確認</li>
               </ol>
             </div>
+
+            <section class="panel blend-panel" id="blendPanel" hidden>
+              <h3>馴染み度 <span class="blend-total" id="blendTotal">–</span><span class="blend-total-max">/100</span></h3>
+              <p class="blend-grade" id="blendGrade"></p>
+              <div class="blend-bar" id="blendColor"><span class="blend-bar-label">色の近さ</span><span class="blend-bar-track"><span class="blend-bar-fill"></span></span><span class="blend-bar-num">–</span></div>
+              <div class="blend-bar" id="blendLum"><span class="blend-bar-label">明るさ</span><span class="blend-bar-track"><span class="blend-bar-fill"></span></span><span class="blend-bar-num">–</span></div>
+              <div class="blend-bar" id="blendContrast"><span class="blend-bar-label">コントラスト</span><span class="blend-bar-track"><span class="blend-bar-fill"></span></span><span class="blend-bar-num">–</span></div>
+              <p class="blend-hint">パターンの色・明るさ・コントラストが背景にどれだけ近いかを見ます。色が合っていても、下の検出ビューで輪郭や明暗差が残ると見つかります。</p>
+            </section>
 
             <div class="note">
               <strong>📌 補足：</strong> 可視評価は参考値です。NIR・サーマル・LiDAR等のセンサーは別途評価が必要です。
@@ -186,6 +197,11 @@
               <label class="field checkbox-field">
                 <input id="enableEdgeDetection" type="checkbox">
                 <span>エッジ検出フィルター（視覚的注目点を可視化）</span>
+              </label>
+
+              <label class="field checkbox-field">
+                <input id="enableDetectView" type="checkbox">
+                <span>検出ビュー（目立つ場所をヒートマップで表示）<span class="detect-score" id="detectScore"></span></span>
               </label>
             </div>
 
@@ -327,6 +343,9 @@
   <script src="js/color-utils.js"></script>
   <script src="js/perlin.js"></script>
   <script src="js/cable-plan.js"></script>
+  <script src="js/blend-score.js"></script>
+  <script src="js/palette-extract.js"></script>
+  <script src="js/detect-map.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
