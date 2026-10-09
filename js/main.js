@@ -696,14 +696,37 @@ document.addEventListener('DOMContentLoaded', () => {
   let detectCue = 'combined';
   const CUE_LABEL = { combined: '総合', edge: '輪郭', gloss: '光沢', line: '直線', color: '色の外れ' };
 
+  // 検出ビューは縮小解像度で計算する（原寸1280×720だと重い）。
+  // 320×180でDetectMap/DetectCuesを出し、ヒートマップを拡大して重ねる。半径は縮尺に合わせる。
+  const DETECT_W = 320, DETECT_H = 180;
+  const detectTmp = document.createElement('canvas');
+  detectTmp.width = DETECT_W; detectTmp.height = DETECT_H;
+
+  function downscaledData(srcCanvas, dw, dh){
+    const t = document.createElement('canvas');
+    t.width = dw; t.height = dh;
+    const tc = t.getContext('2d');
+    tc.drawImage(srcCanvas, 0, 0, dw, dh);
+    return tc.getImageData(0, 0, dw, dh).data;
+  }
+
   function drawDetectView(w, h){
-    const compData = cctx.getImageData(0, 0, w, h);
-    const envData = envOnlyCtx.getImageData(0, 0, w, h).data;
+    const dw = DETECT_W, dh = DETECT_H;
+    // 合成と背景を縮小してから画素を取る（comp・envOnlyCanvas から）
+    const compData = downscaledData(comp, dw, dh);
+    const envData = downscaledData(envOnlyCanvas, dw, dh);
+
+    // 半径は縮尺（dw/w ≈ 0.25）に合わせて小さくする
+    const radius = Math.max(1, Math.round(8 * dw / w));
+    const colorRadius = radius;
+    const glossRadius = Math.max(1, Math.round(4 * dw / w));
 
     // 手がかりごとのスコアの内訳を出す（総合はDetectMap、個別はDetectCues）
-    const map = DetectMap.build(compData.data, envData, w, h, { radius: 8 });
+    const map = DetectMap.build(compData, envData, dw, dh, { radius: radius });
     const combinedScore = DetectMap.detectScore(map.mean);
-    const cues = DetectCues.build(compData.data, envData, w, h, { color: { radius: 8 } });
+    const cues = DetectCues.build(compData, envData, dw, dh, {
+      color: { radius: colorRadius }, gloss: { radius: glossRadius }
+    });
 
     // 表示する手がかりのヒート配列を選ぶ
     let heat;
@@ -715,8 +738,8 @@ document.addEventListener('DOMContentLoaded', () => {
       lastDetectScore = cues.scores[detectCue];
     }
 
-    // ヒートマップ（黒→赤→黄）を半透明で重ねる
-    const out = cctx.createImageData(w, h);
+    // ヒートマップ（黒→赤→黄）を縮小解像度で作り、拡大して半透明で重ねる
+    const out = detectTmp.getContext('2d').createImageData(dw, dh);
     for(let p=0;p<heat.length;p++){
       const v = heat[p] / 255;
       const i = p * 4;
@@ -725,10 +748,9 @@ document.addEventListener('DOMContentLoaded', () => {
       out.data[i+2] = 0;
       out.data[i+3] = Math.round(v * 200);
     }
-    const tmp = document.createElement('canvas');
-    tmp.width = w; tmp.height = h;
-    tmp.getContext('2d').putImageData(out, 0, 0);
-    cctx.drawImage(tmp, 0, 0);
+    detectTmp.getContext('2d').putImageData(out, 0, 0);
+    cctx.imageSmoothingEnabled = true;
+    cctx.drawImage(detectTmp, 0, 0, dw, dh, 0, 0, w, h);
 
     const scoreEl = document.getElementById('detectScore');
     if(scoreEl) scoreEl.textContent = String(lastDetectScore);
