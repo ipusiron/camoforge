@@ -608,6 +608,9 @@ document.addEventListener('DOMContentLoaded', () => {
       applyEdgeDetection(compImgData, w, h);
       cctx.putImageData(compImgData, 0, 0);
     }
+
+    // 環境プリセットとの馴染み度の一覧を更新（パターンが変わるたび）
+    updatePresetCompare();
   }
 
   // ===== 馴染み度の評価と検出ビュー（第2弾） =====
@@ -674,6 +677,89 @@ document.addEventListener('DOMContentLoaded', () => {
     cctx.drawImage(tmp, 0, 0);
     const scoreEl = document.getElementById('detectScore');
     if(scoreEl) scoreEl.textContent = String(lastDetectScore);
+  }
+
+  // ===== 環境プリセット比較（第3弾） =====
+  // 作り付けの背景（雪・土・草・サーバールーム・ケーブル群）にパターンを当てて、
+  // 同じ迷彩がどの環境でどれだけ馴染むかを並べる。「万能の迷彩は無い」ことを数字で見せる。
+  const presetListEl = document.getElementById('presetList');
+  const presetCompareEl = document.getElementById('presetCompare');
+  let activePresetId = null;
+
+  const GRADE_CLASS = { high: 'g-high', medium: 'g-medium', low: 'g-low', poor: 'g-poor' };
+
+  function buildPresetButtons(){
+    if(!presetListEl || typeof EnvPreset === 'undefined') return;
+    presetListEl.textContent = '';
+    for(const p of EnvPreset.list()){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'preset-btn';
+      btn.dataset.preset = p.id;
+      btn.title = p.descJa;
+      btn.textContent = p.nameJa;
+      btn.addEventListener('click', () => loadPreset(p.id));
+      presetListEl.appendChild(btn);
+    }
+  }
+
+  // プリセットの背景をプレビューに読み込む（画像の代わりに canvas を背景にする）
+  function loadPreset(id){
+    if(typeof EnvPreset === 'undefined') return;
+    const w = 1280, h = 720;
+    const buf = EnvPreset.render(id, w, h);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').putImageData(new ImageData(buf, w, h), 0, 0);
+    envImage = c; // drawImageCover は canvas も扱える（naturalWidth が無ければ width を使う）
+    activePresetId = id;
+    const extractBtn = document.getElementById('extractPalette');
+    if(extractBtn) extractBtn.disabled = false;
+    highlightActivePreset();
+    draw();
+  }
+
+  function highlightActivePreset(){
+    if(!presetListEl) return;
+    for(const b of presetListEl.querySelectorAll('.preset-btn')){
+      b.classList.toggle('active', b.dataset.preset === activePresetId);
+    }
+  }
+
+  // 現在のパターンを全プリセットに当てて採点し、高い順に並べて表示する
+  function updatePresetCompare(){
+    if(!presetCompareEl || typeof EnvPreset === 'undefined') return;
+    // パターンを小さく描き直してから採点する（軽く・速く）
+    const sw = 160, sh = 90;
+    const tmp = document.createElement('canvas');
+    tmp.width = sw; tmp.height = sh;
+    const tctx = tmp.getContext('2d');
+    tctx.drawImage(canvas, 0, 0, sw, sh);
+    const px = tctx.getImageData(0, 0, sw, sh).data;
+    const rows = EnvPreset.rankPattern(px, sw, sh, 2);
+    presetCompareEl.textContent = '';
+    const title = document.createElement('p');
+    title.className = 'preset-compare-title';
+    title.textContent = 'このパターンの馴染み度（背景別）';
+    presetCompareEl.appendChild(title);
+    rows.forEach((r, idx) => {
+      const row = document.createElement('div');
+      row.className = 'preset-row' + (idx === 0 ? ' best' : '') + (r.id === activePresetId ? ' current' : '');
+      const name = document.createElement('span');
+      name.className = 'preset-row-name';
+      name.textContent = r.nameJa;
+      const track = document.createElement('span');
+      track.className = 'preset-row-track';
+      const fill = document.createElement('span');
+      fill.className = 'preset-row-fill ' + (GRADE_CLASS[r.grade] || '');
+      fill.style.width = r.blend + '%';
+      track.appendChild(fill);
+      const num = document.createElement('span');
+      num.className = 'preset-row-num';
+      num.textContent = r.blend;
+      row.appendChild(name); row.appendChild(track); row.appendChild(num);
+      presetCompareEl.appendChild(row);
+    });
   }
 
   // ===== Pattern generators =====
@@ -1348,6 +1434,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initColorPicker(); // Initialize color picker modal
   updateRangeValues();
   updatePalettePreview();
+  buildPresetButtons();
   draw();
 
   // Load default background image

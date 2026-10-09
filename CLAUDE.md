@@ -21,8 +21,9 @@ Six pattern generators, all using Canvas 2D API. Each uses a global `patternSeed
 - `js/blend-score.js` (`BlendScore`): blend score (0-100) from the pattern vs environment color/luminance/contrast stats. DOM-free, tested.
 - `js/palette-extract.js` (`PaletteExtract`): k-means palette extraction from an image's pixels (deterministic init by luminance). DOM-free, tested.
 - `js/detect-map.js` (`DetectMap`): a detectability heatmap from the composite's edges and its difference from the environment's local mean. DOM-free, tested.
+- `js/env-presets.js` (`EnvPreset`): built-in environment backgrounds (snow/soil/grass/server-room/cable-bundle) generated as RGBA buffers (canvas-free, seeded), plus `rankPattern` which scores one pattern against every preset via BlendScore and sorts them. DOM-free, tested.
 
-The Environment Check tab uses these: updateBlendReadout (BlendScore) shows the blend panel, drawDetectView (DetectMap) overlays the heatmap when 検出ビュー is on, and 環境画像から色を抽出 runs PaletteExtract on the uploaded image and fills the palette.
+The Environment Check tab uses these: updateBlendReadout (BlendScore) shows the blend panel, drawDetectView (DetectMap) overlays the heatmap when 検出ビュー is on, and 環境画像から色を抽出 runs PaletteExtract on the uploaded image and fills the palette. 環境プリセット (EnvPreset) renders a preset into an offscreen canvas as the background (loadPreset) and updatePresetCompare ranks the current pattern against all presets on every draw (scored at a downscaled 160×90 for speed).
 
 1. **drawBlackMatte** (js/main.js:627-677)
    - Matte black texture using multi-octave Perlin noise with vignetting

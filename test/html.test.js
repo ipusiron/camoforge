@@ -72,3 +72,10 @@ test('lang属性とviewportがある', () => {
   assert.match(html, /<html lang="ja"/);
   assert.match(html, /<meta name="viewport"/);
 });
+
+test('環境プリセット比較のUIがある（第3弾）', () => {
+  assert.ok(html.includes('id="presetPanel"'));
+  assert.ok(html.includes('id="presetList"'));
+  assert.ok(html.includes('id="presetCompare"'));
+  assert.ok(html.includes('環境プリセット'));
+});

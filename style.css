@@ -1174,3 +1174,29 @@ select#palettePreset optgroup {
   font-style: normal;
   font-weight: 600;
 }
+
+/* ===== 環境プリセット比較（第3弾） ===== */
+.preset-panel { margin-top: 16px; }
+.preset-hint { margin: 4px 0 10px; color: var(--muted, #8a93a6); font-size: 13px; line-height: 1.6; }
+.preset-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.preset-btn {
+  flex: 1 0 auto; min-width: 72px; padding: 7px 10px;
+  border: 1px solid var(--border-strong); border-radius: 8px;
+  background: transparent; color: var(--text); font-size: 13px; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.preset-btn:hover { border-color: var(--accent); }
+.preset-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.preset-compare-title { margin: 0 0 8px; color: var(--muted, #8a93a6); font-size: 13px; }
+.preset-row { display: grid; grid-template-columns: 5.5em 1fr 2.2em; align-items: center; gap: 8px; margin-bottom: 6px; }
+.preset-row-name { font-size: 13px; color: var(--text); }
+.preset-row-track { height: 10px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.preset-row-fill { display: block; height: 100%; width: 0; transition: width 0.2s; }
+.preset-row-fill.g-high { background: linear-gradient(90deg, #3a7, #6c6); }
+.preset-row-fill.g-medium { background: linear-gradient(90deg, #7a3, #cc6); }
+.preset-row-fill.g-low { background: linear-gradient(90deg, #c83, #e96); }
+.preset-row-fill.g-poor { background: linear-gradient(90deg, #a33, #d55); }
+.preset-row-num { font-size: 13px; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+.preset-row.best .preset-row-name { font-weight: 600; }
+.preset-row.best .preset-row-name::after { content: " ◀"; color: var(--accent); }
+.preset-row.current .preset-row-name { color: var(--accent); }
