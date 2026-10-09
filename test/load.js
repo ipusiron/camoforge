@@ -20,3 +20,4 @@ export const blend = () => load('js/blend-score.js').BlendScore;
 export const extract = () => { load('js/color-utils.js'); return load('js/palette-extract.js').PaletteExtract; };
 export const detect = () => load('js/detect-map.js').DetectMap;
 export const envpreset = () => { load('js/blend-score.js'); return load('js/env-presets.js').EnvPreset; };
+export const cues = () => load('js/detect-cues.js').DetectCues;
