@@ -65,7 +65,7 @@ This is CamoForge's signature feature — an environment-fit check with integrat
   - **Gloss (highlights)** — bright spots relative to the neighborhood; reflections of non-matte surfaces or connectors
   - **Straight lines (man-made edges)** — strong edges that continue straight; rare in nature
   - **Color difference** — deviation from the background's local mean
-- **Environment presets**: built-in backgrounds (snow, soil, grass, server room, cable bundle). The same pattern is scored against every background and ranked, so you can confirm — with numbers — that **there is no universal camouflage**.
+- **Environment presets**: built-in backgrounds (snow, soil, grass, server room, cable bundle). The same pattern is scored against every background and ranked, so you can confirm — with numbers — that **there is no universal camouflage**. The first button, "Forest path (photo)", brings back the photo shown at startup.
 - **Color vision simulation**: normal / protanopia / deuteranopia / tritanopia / monochrome, applied to the composite
 - **Edge-detection filter** (Sobel) and **composite export**
 
