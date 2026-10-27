@@ -831,13 +831,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // 同じ迷彩がどの環境でどれだけ馴染むかを並べる。「万能の迷彩は無い」ことを数字で見せる。
   const presetListEl = document.getElementById('presetList');
   const presetCompareEl = document.getElementById('presetCompare');
-  let activePresetId = null;
+  // 起動時に読み込む写真（森の小道）。プリセットを選んだあとでも、先頭のボタンで戻せる
+  const DEFAULT_ENV_SRC = './assets/background.jpg';
+  const DEFAULT_ENV_ID = 'photo-forest';
+  let activePresetId = DEFAULT_ENV_ID;
+  let envLoadSeq = 0; // 写真の読み込み中に別の背景を選んだら、遅れて届いた写真で上書きしない
 
   const GRADE_CLASS = { high: 'g-high', medium: 'g-medium', low: 'g-low', poor: 'g-poor' };
 
   function buildPresetButtons(){
     if(!presetListEl || typeof EnvPreset === 'undefined') return;
     presetListEl.textContent = '';
+    const photoBtn = document.createElement('button');
+    photoBtn.type = 'button';
+    photoBtn.className = 'preset-btn';
+    photoBtn.dataset.preset = DEFAULT_ENV_ID;
+    photoBtn.textContent = T('env.presetForestPhoto');
+    photoBtn.addEventListener('click', () => {
+      activePresetId = DEFAULT_ENV_ID;
+      highlightActivePreset();
+      loadEnvironmentImage(DEFAULT_ENV_SRC, false);
+    });
+    presetListEl.appendChild(photoBtn);
     for(const p of EnvPreset.list()){
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -858,6 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
     c.getContext('2d').putImageData(new ImageData(buf, w, h), 0, 0);
+    envLoadSeq++;
     envImage = c; // drawImageCover は canvas も扱える（naturalWidth が無ければ width を使う）
     activePresetId = id;
     const extractBtn = document.getElementById('extractPalette');
@@ -1464,15 +1480,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // ===== Load environment image from URL or file =====
   function loadEnvironmentImage(src, isFile = false){
     const img = new Image();
+    const seq = ++envLoadSeq;
     img.onload = () => {
+      // Revoke object URL after loading if it was a blob
+      if(isFile) URL.revokeObjectURL(img.src);
+      if(seq !== envLoadSeq) return;
       envImage = img;
+      // アップロードした画像はプリセットではないので、ボタンの選択を外す
+      if(isFile){ activePresetId = null; highlightActivePreset(); }
       const extractBtn = document.getElementById('extractPalette');
       if(extractBtn) extractBtn.disabled = false;
       draw();
-      // Revoke object URL after loading if it was a blob
-      if(isFile){
-        URL.revokeObjectURL(img.src);
-      }
     };
     img.onerror = () => {
       if(isFile){
@@ -1595,9 +1613,10 @@ document.addEventListener('DOMContentLoaded', () => {
   updateRangeValues();
   updatePalettePreview();
   buildPresetButtons();
+  highlightActivePreset();
   if(window.I18N){ window.I18N.onChange(() => { buildPresetButtons(); highlightActivePreset(); draw(); }); }
   draw();
 
   // Load default background image
-  loadEnvironmentImage('./assets/background.jpg', false);
+  loadEnvironmentImage(DEFAULT_ENV_SRC, false);
 });
