@@ -27,9 +27,9 @@ test('インラインのイベントハンドラーとinline scriptがない', (
   assert.ok(!/<script(?![^>]*\ssrc=)[^>]*>[\s\S]*?<\/script>/i.test(html), 'インラインのscriptがある');
 });
 
-test('スクリプトを依存の順で読み込む（color-utils → perlin → cable-plan → main）', () => {
+test('スクリプトを依存の順で読み込む（theme-init → color-utils → perlin → cable-plan → main）', () => {
   const order = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
-  assert.deepEqual(order, ['js/color-utils.js', 'js/perlin.js', 'js/cable-plan.js',
+  assert.deepEqual(order, ['js/theme-init.js', 'js/color-utils.js', 'js/perlin.js', 'js/cable-plan.js',
     'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/env-presets.js', 'js/detect-cues.js', 'js/messages.js', 'js/i18n.js', 'js/main.js']);
 });
 

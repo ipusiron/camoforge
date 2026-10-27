@@ -465,6 +465,7 @@ camoforge/
 ├── .nojekyll              # GitHub Pages設定（Jekyllビルド無効化）
 │
 ├── js/                     # JavaScriptファイル
+│   ├── theme-init.js      # 最初の描画の前にテーマ（ダーク/ライト）を決める
 │   ├── color-utils.js     # 色のユーティリティ（hexToRgbなど。DOM非依存・テスト対象）
 │   ├── cable-plan.js      # ケーブル束の配置計画（シードで決まる・テスト対象）
 │   ├── blend-score.js     # 馴染み度の評価（DOM非依存・テスト対象）

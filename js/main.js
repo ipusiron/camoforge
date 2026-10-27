@@ -1579,23 +1579,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const themeIcon = document.querySelector('.theme-icon');
   const root = document.documentElement;
 
-  // Check for saved theme or default to system preference
-  const savedTheme = localStorage.getItem('theme');
-  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-
-  if(initialTheme === 'light'){
-    root.classList.add('light-mode');
-    themeIcon.textContent = '🌙';
-  } else {
-    themeIcon.textContent = '☀️';
-  }
+  // The initial theme is set in <head> by js/theme-init.js (before first paint); here we only sync the icon
+  themeIcon.textContent = root.classList.contains('light-mode') ? '🌙' : '☀️';
 
   if(themeToggle){
     themeToggle.addEventListener('click', () => {
       const isLight = root.classList.toggle('light-mode');
       themeIcon.textContent = isLight ? '🌙' : '☀️';
-      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch (e) { /* 使えない環境でも続行 */ }
     });
   }
 
