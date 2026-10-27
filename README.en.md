@@ -93,6 +93,7 @@ camoforge/
 ├── index.html              # Main HTML (3 tabs)
 ├── style.css               # Stylesheet (dark/light mode)
 ├── js/
+│   ├── theme-init.js       # Sets the dark/light theme before first paint
 │   ├── color-utils.js      # Color utilities (DOM-free, tested)
 │   ├── cable-plan.js       # Cable-bundle layout (seeded, tested)
 │   ├── blend-score.js      # Blend score (DOM-free, tested)
