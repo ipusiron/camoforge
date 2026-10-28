@@ -89,62 +89,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== Color vision simulation =====
-  /**
-   * Apply color vision filter to simulate different types of color blindness
-   * Uses matrix transformation to convert RGB values to simulate how people with
-   * different color vision deficiencies perceive colors.
-   *
-   * @param {ImageData} imageData - Canvas ImageData object to apply filter to
-   * @param {string} mode - Color vision mode: 'normal', 'protanopia', 'deuteranopia', 'tritanopia', 'monochrome'
-   * @returns {ImageData} Modified ImageData with color vision simulation applied
-   */
+  // 変換そのものは js/color-vision.js（ColorVision）。ImageData にかける薄い包み。
   function applyColorVisionFilter(imageData, mode){
-    if(mode === 'normal') return imageData;
-
-    const data = imageData.data;
-    const len = data.length;
-
-    // Iterate through each pixel (RGBA = 4 values per pixel)
-    for(let i = 0; i < len; i += 4){
-      let r = data[i];
-      let g = data[i + 1];
-      let b = data[i + 2];
-
-      let nr, ng, nb;
-
-      // Apply color transformation matrix based on color vision type
-      switch(mode){
-        case 'protanopia': // Red-blind (1型色覚) - Cannot distinguish red
-          nr = 0.567 * r + 0.433 * g;
-          ng = 0.558 * r + 0.442 * g;
-          nb = 0.242 * g + 0.758 * b;
-          break;
-        case 'deuteranopia': // Green-blind (2型色覚) - Cannot distinguish green
-          nr = 0.625 * r + 0.375 * g;
-          ng = 0.7 * r + 0.3 * g;
-          nb = 0.3 * g + 0.7 * b;
-          break;
-        case 'tritanopia': // Blue-blind (3型色覚) - Cannot distinguish blue
-          nr = 0.95 * r + 0.05 * g;
-          ng = 0.433 * g + 0.567 * b;
-          nb = 0.475 * g + 0.525 * b;
-          break;
-        case 'monochrome': // Total color blindness - Grayscale only
-          // Standard luminance formula (ITU-R BT.601)
-          const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-          nr = ng = nb = gray;
-          break;
-        default:
-          nr = r; ng = g; nb = b;
-      }
-
-      // Write transformed RGB values back to image data
-      data[i] = Math.round(nr);
-      data[i + 1] = Math.round(ng);
-      data[i + 2] = Math.round(nb);
-    }
-
+    ColorVision.apply(imageData.data, mode);
     return imageData;
+  }
+
+  // 採点用: RGBA の複製に、いま選んでいる色覚の変換をかけて返す（元の配列は変えない）
+  function cvdCopy(px){
+    const out = new Uint8ClampedArray(px);
+    return colorVisionMode === 'normal' ? out : ColorVision.apply(out, colorVisionMode);
   }
 
   // ===== Edge detection (Sobel filter) =====
@@ -596,14 +550,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Apply color vision filter to composite canvas (right side of comparison)
+    // Apply color vision filter to composite canvas (right side of comparison)。1回だけかける
     if(colorVisionMode !== 'normal'){
       const imgData = cctx.getImageData(0, 0, w, h);
       applyColorVisionFilter(imgData, colorVisionMode);
       cctx.putImageData(imgData, 0, 0);
     }
 
-    // 馴染み度の評価と検出ビュー（環境画像があるときだけ）。色覚フィルターの前に測る
+    // 馴染み度の評価と検出ビュー（環境画像があるときだけ）。選んだ色覚の見え方で測る
+    // （背景と合成はここまでで変換済み。パターンは updateBlendReadout で同じ変換をかける）。
+    // 検出ビューのヒートマップは変換のあとに重ねるので、色覚にかかわらず同じ配色で読める
     if(envImage && envOnlyCtx){
       updateBlendReadout(w, h);
       if(detectViewEnabled && withDetect){
@@ -611,13 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       clearBlendReadout();
-    }
-
-    // Apply color vision filter to composite canvas (right side of comparison)
-    if(colorVisionMode !== 'normal'){
-      const imgData = cctx.getImageData(0, 0, w, h);
-      applyColorVisionFilter(imgData, colorVisionMode);
-      cctx.putImageData(imgData, 0, 0);
     }
 
     // Apply edge detection filter if enabled (applied AFTER color vision simulation)
@@ -693,11 +642,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const T = (k) => (window.I18N ? window.I18N.t(k) : k);
   const curLang = () => (window.I18N ? window.I18N.lang : 'ja');
 
-  // パターン（patternCanvas）と背景（envOnlyCanvas）の色・明るさ・コントラストのずれから馴染み度を出す
+  // パターン（patternCanvas）と背景（envOnlyCanvas）の色・明るさ・コントラストのずれから馴染み度を出す。
+  // envOnlyCanvas は色覚の変換済みなので、パターンにも同じ変換をかけてからそろえて比べる
   function updateBlendReadout(w, h){
     const panel = document.getElementById('blendPanel');
     if(!panel) return;
-    const patternData = ctx.getImageData(0, 0, w, h).data;
+    const patternData = cvdCopy(ctx.getImageData(0, 0, w, h).data);
     const envData = envOnlyCtx.getImageData(0, 0, w, h).data;
     // 全画素は重いので間引く
     const step = 7;
@@ -826,48 +776,109 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ===== 環境プリセット比較（第3弾） =====
-  // 作り付けの背景（雪・土・草・サーバールーム・ケーブル群）にパターンを当てて、
+  // ===== 環境プリセット比較 =====
+  // 作り付けの背景（森の小道・雪・土・草・サーバールーム・ケーブル群）にパターンを当てて、
   // 同じ迷彩がどの環境でどれだけ馴染むかを並べる。「万能の迷彩は無い」ことを数字で見せる。
+  // 各環境に「写真」（EnvPhoto）と「生成」（EnvPreset）の2種類がある。切り替えると、同じ環境の
+  // もう一方を読み込み、比較表には両方の馴染み度を並べる（作った背景と本物の背景のずれを見せる）。
   const presetListEl = document.getElementById('presetList');
   const presetCompareEl = document.getElementById('presetCompare');
-  // 起動時に読み込む写真（森の小道）。プリセットを選んだあとでも、先頭のボタンで戻せる
-  const DEFAULT_ENV_SRC = './assets/background.jpg';
-  const DEFAULT_ENV_ID = 'photo-forest';
-  let activePresetId = DEFAULT_ENV_ID;
+  const presetModeBtns = document.querySelectorAll('.preset-mode-btn');
+  // 起動時は「写真・森の小道」。プリセットを選んだあとでも、ボタンで戻せる
+  let presetMode = 'photo';
+  let activeEnv = { kind: 'photo', id: 'forest' }; // アップロードした画像のときは null
   let envLoadSeq = 0; // 写真の読み込み中に別の背景を選んだら、遅れて届いた写真で上書きしない
 
   const GRADE_CLASS = { high: 'g-high', medium: 'g-medium', low: 'g-low', poor: 'g-poor' };
+  const SCORE_W = 160, SCORE_H = 90; // 比較表の採点に使う大きさ
+
+  // 写真のサムネイル（320×180）を採点用の 160×90 に縮めた画素。届いたものから比較表に出す
+  const photoPixels = {};
+  function loadPhotoThumbs(){
+    if(typeof EnvPhoto === 'undefined') return;
+    for(const p of EnvPhoto.list()){
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = SCORE_W; c.height = SCORE_H;
+        const cx = c.getContext('2d', { willReadFrequently: true });
+        cx.drawImage(img, 0, 0, SCORE_W, SCORE_H);
+        photoPixels[p.id] = cx.getImageData(0, 0, SCORE_W, SCORE_H).data;
+        const envTab = document.getElementById('tab-environment');
+        if(envTab && envTab.classList.contains('active')) updatePresetCompare();
+      };
+      img.src = './' + p.thumb;
+    }
+  }
+
+  function envName(id){
+    const p = EnvPreset.list().find((x) => x.id === id);
+    return p ? (curLang() === 'en' ? p.nameEn : p.nameJa) : id;
+  }
+
+  // ボタンの説明（ツールチップ）: 写真は出典とライセンス、生成は描き方の説明
+  function presetTitle(kind, id){
+    if(kind === 'photo'){
+      const c = EnvPhoto.find(id).credit;
+      // 作者撮影の写真は題名を環境名で出す（英語表示に日本語を残さない）
+      const title = c.license ? c.title : envName(id);
+      const lic = c.license ? c.license.name : T('env.ownPhoto');
+      return curLang() === 'en' ? `${title} — ${c.site || c.author} (${lic})` : `${title} — ${c.site || c.author}（${lic}）`;
+    }
+    const p = EnvPreset.list().find((x) => x.id === id);
+    return curLang() === 'en' ? p.nameEn : p.descJa;
+  }
 
   function buildPresetButtons(){
-    if(!presetListEl || typeof EnvPreset === 'undefined') return;
+    if(!presetListEl || typeof EnvPreset === 'undefined' || typeof EnvPhoto === 'undefined') return;
     presetListEl.textContent = '';
-    const photoBtn = document.createElement('button');
-    photoBtn.type = 'button';
-    photoBtn.className = 'preset-btn';
-    photoBtn.dataset.preset = DEFAULT_ENV_ID;
-    photoBtn.textContent = T('env.presetForestPhoto');
-    photoBtn.addEventListener('click', () => {
-      activePresetId = DEFAULT_ENV_ID;
-      highlightActivePreset();
-      loadEnvironmentImage(DEFAULT_ENV_SRC, false);
-    });
-    presetListEl.appendChild(photoBtn);
     for(const p of EnvPreset.list()){
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'preset-btn';
       btn.dataset.preset = p.id;
-      btn.title = curLang() === 'en' ? p.nameEn : p.descJa;
-      btn.textContent = curLang() === 'en' ? p.nameEn : p.nameJa;
-      btn.addEventListener('click', () => loadPreset(p.id));
+      btn.title = presetTitle(presetMode, p.id);
+      if(presetMode === 'photo'){
+        const img = document.createElement('img');
+        img.className = 'preset-thumb';
+        img.src = './' + EnvPhoto.find(p.id).thumb;
+        img.alt = '';
+        btn.appendChild(img);
+      } else {
+        const c = document.createElement('canvas');
+        c.className = 'preset-thumb';
+        c.width = SCORE_W; c.height = SCORE_H;
+        c.getContext('2d').putImageData(new ImageData(EnvPreset.render(p.id, SCORE_W, SCORE_H), SCORE_W, SCORE_H), 0, 0);
+        btn.appendChild(c);
+      }
+      const label = document.createElement('span');
+      label.className = 'preset-label';
+      label.textContent = envName(p.id);
+      btn.appendChild(label);
+      btn.addEventListener('click', () => selectEnv(presetMode, p.id));
       presetListEl.appendChild(btn);
     }
+    highlightActivePreset();
   }
 
-  // プリセットの背景をプレビューに読み込む（画像の代わりに canvas を背景にする）
-  function loadPreset(id){
-    if(typeof EnvPreset === 'undefined') return;
+  function setPresetMode(mode){
+    presetMode = mode;
+    for(const b of presetModeBtns){
+      const on = b.dataset.mode === mode;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    buildPresetButtons();
+  }
+
+  // 背景を読み込む。写真は画像として、生成は canvas として envImage に置く
+  function selectEnv(kind, id){
+    activeEnv = { kind, id };
+    highlightActivePreset();
+    if(kind === 'photo'){
+      loadEnvironmentImage('./' + EnvPhoto.find(id).src, false);
+      return;
+    }
     const w = 1280, h = 720;
     const buf = EnvPreset.render(id, w, h);
     const c = document.createElement('canvas');
@@ -875,52 +886,82 @@ document.addEventListener('DOMContentLoaded', () => {
     c.getContext('2d').putImageData(new ImageData(buf, w, h), 0, 0);
     envLoadSeq++;
     envImage = c; // drawImageCover は canvas も扱える（naturalWidth が無ければ width を使う）
-    activePresetId = id;
     const extractBtn = document.getElementById('extractPalette');
     if(extractBtn) extractBtn.disabled = false;
-    highlightActivePreset();
     draw();
   }
 
   function highlightActivePreset(){
     if(!presetListEl) return;
     for(const b of presetListEl.querySelectorAll('.preset-btn')){
-      b.classList.toggle('active', b.dataset.preset === activePresetId);
+      const on = !!activeEnv && activeEnv.kind === presetMode && b.dataset.preset === activeEnv.id;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
     }
   }
 
-  // 現在のパターンを全プリセットに当てて採点し、高い順に並べて表示する
+  // 1本のバー（名前の横に「写真」「生成」の2本を並べる）
+  function compareBar(kind, r){
+    const line = document.createElement('span');
+    line.className = 'preset-bar preset-bar-' + kind + (kind === presetMode ? ' is-mode' : '');
+    const tag = document.createElement('span');
+    tag.className = 'preset-bar-tag';
+    tag.textContent = T(kind === 'photo' ? 'env.modePhoto' : 'env.modeGen');
+    const track = document.createElement('span');
+    track.className = 'preset-row-track';
+    const fill = document.createElement('span');
+    fill.className = 'preset-row-fill ' + (r ? (GRADE_CLASS[r.grade] || '') : '');
+    fill.style.width = (r ? r.blend : 0) + '%';
+    track.appendChild(fill);
+    const num = document.createElement('span');
+    num.className = 'preset-row-num';
+    num.textContent = r ? String(r.blend) : '…';
+    line.appendChild(tag); line.appendChild(track); line.appendChild(num);
+    return line;
+  }
+
+  // 現在のパターンを、各環境の写真と生成の両方に当てて採点する。
+  // 並びは、いま選んでいる種類（写真／生成）の馴染み度の高い順。採点は選んだ色覚の見え方で行う
   function updatePresetCompare(){
-    if(!presetCompareEl || typeof EnvPreset === 'undefined') return;
+    if(!presetCompareEl || typeof EnvPreset === 'undefined' || typeof EnvPhoto === 'undefined') return;
     // パターンを小さく描き直してから採点する（軽く・速く）
-    const sw = 160, sh = 90;
     const tmp = document.createElement('canvas');
-    tmp.width = sw; tmp.height = sh;
-    const tctx = tmp.getContext('2d');
-    tctx.drawImage(canvas, 0, 0, sw, sh);
-    const px = tctx.getImageData(0, 0, sw, sh).data;
-    const rows = EnvPreset.rankPattern(px, sw, sh, 2);
+    tmp.width = SCORE_W; tmp.height = SCORE_H;
+    const tctx = tmp.getContext('2d', { willReadFrequently: true });
+    tctx.drawImage(canvas, 0, 0, SCORE_W, SCORE_H);
+    const px = cvdCopy(tctx.getImageData(0, 0, SCORE_W, SCORE_H).data);
+    const transform = colorVisionMode === 'normal' ? null : (a) => ColorVision.apply(a, colorVisionMode);
+    const genRows = EnvPreset.rankPattern(px, SCORE_W, SCORE_H, 2, transform);
+    const photoEnvs = EnvPreset.list().filter((p) => photoPixels[p.id]).map((p) => ({
+      id: p.id, nameJa: p.nameJa, nameEn: p.nameEn, pixels: cvdCopy(photoPixels[p.id])
+    }));
+    const photoRows = EnvPreset.rankAgainst(px, photoEnvs, 2);
+    const byId = (rows) => Object.fromEntries(rows.map((r) => [r.id, r]));
+    const gen = byId(genRows), photo = byId(photoRows);
+    const order = EnvPreset.list().map((p) => p.id);
+    const score = (id) => {
+      const r = presetMode === 'photo' ? photo[id] : gen[id];
+      return r ? r.blend : -1;
+    };
+    order.sort((a, b) => score(b) - score(a));
+
     presetCompareEl.textContent = '';
     const title = document.createElement('p');
     title.className = 'preset-compare-title';
     title.textContent = T('presetCompareTitle');
     presetCompareEl.appendChild(title);
-    rows.forEach((r, idx) => {
+    order.forEach((id, idx) => {
       const row = document.createElement('div');
-      row.className = 'preset-row' + (idx === 0 ? ' best' : '') + (r.id === activePresetId ? ' current' : '');
+      const cur = activeEnv && activeEnv.id === id;
+      row.className = 'preset-row' + (idx === 0 ? ' best' : '') + (cur ? ' current' : '');
       const name = document.createElement('span');
       name.className = 'preset-row-name';
-      name.textContent = curLang() === 'en' ? r.nameEn : r.nameJa;
-      const track = document.createElement('span');
-      track.className = 'preset-row-track';
-      const fill = document.createElement('span');
-      fill.className = 'preset-row-fill ' + (GRADE_CLASS[r.grade] || '');
-      fill.style.width = r.blend + '%';
-      track.appendChild(fill);
-      const num = document.createElement('span');
-      num.className = 'preset-row-num';
-      num.textContent = r.blend;
-      row.appendChild(name); row.appendChild(track); row.appendChild(num);
+      name.textContent = envName(id);
+      const bars = document.createElement('span');
+      bars.className = 'preset-row-bars';
+      bars.appendChild(compareBar('photo', photo[id]));
+      bars.appendChild(compareBar('gen', gen[id]));
+      row.appendChild(name); row.appendChild(bars);
       presetCompareEl.appendChild(row);
     });
   }
@@ -1487,7 +1528,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(seq !== envLoadSeq) return;
       envImage = img;
       // アップロードした画像はプリセットではないので、ボタンの選択を外す
-      if(isFile){ activePresetId = null; highlightActivePreset(); }
+      if(isFile){ activeEnv = null; highlightActivePreset(); }
       const extractBtn = document.getElementById('extractPalette');
       if(extractBtn) extractBtn.disabled = false;
       draw();
@@ -1613,10 +1654,19 @@ document.addEventListener('DOMContentLoaded', () => {
   updateRangeValues();
   updatePalettePreview();
   buildPresetButtons();
-  highlightActivePreset();
-  if(window.I18N){ window.I18N.onChange(() => { buildPresetButtons(); highlightActivePreset(); draw(); }); }
+  loadPhotoThumbs();
+  // 「写真｜生成」の切り替え。プリセットを表示中なら、同じ環境のもう一方を読み込む
+  for(const b of presetModeBtns){
+    b.addEventListener('click', () => {
+      if(b.dataset.mode === presetMode) return;
+      setPresetMode(b.dataset.mode);
+      if(activeEnv) selectEnv(presetMode, activeEnv.id);
+      else updatePresetCompare();
+    });
+  }
+  if(window.I18N){ window.I18N.onChange(() => { buildPresetButtons(); draw(); }); }
   draw();
 
-  // Load default background image
-  loadEnvironmentImage(DEFAULT_ENV_SRC, false);
+  // Load default background image（写真・森の小道）
+  selectEnv('photo', 'forest');
 });

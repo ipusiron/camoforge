@@ -29,7 +29,10 @@
     },
     {
       id: 'soil', src: 'assets/env/soil.jpg', thumb: 'assets/env/thumb/soil.jpg',
-      credit: { title: 'Ground 048', author: 'ambientCG', site: 'ambientCG', url: 'https://ambientcg.com/a/Ground048', license: CC0, note: '法線マップと AO から陰影を焼き込み' }
+      credit: {
+        title: 'Ground 048', author: 'ambientCG', site: 'ambientCG', url: 'https://ambientcg.com/a/Ground048',
+        license: CC0, note: '法線マップと AO から陰影を焼き込み'
+      }
     },
     {
       id: 'grass', src: 'assets/env/grass.jpg', thumb: 'assets/env/thumb/grass.jpg',
@@ -37,11 +40,17 @@
     },
     {
       id: 'server', src: 'assets/env/server.jpg', thumb: 'assets/env/thumb/server.jpg',
-      credit: { title: 'Front of server racks at NERSC', author: 'Derrick Coetzee', site: 'Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:Front_of_server_racks_at_NERSC.jpg', license: CC0, note: '16:9 に切り抜き' }
+      credit: {
+        title: 'Front of server racks at NERSC', author: 'Derrick Coetzee', site: 'Wikimedia Commons',
+        url: 'https://commons.wikimedia.org/wiki/File:Front_of_server_racks_at_NERSC.jpg', license: CC0, note: '16:9 に切り抜き'
+      }
     },
     {
       id: 'cables', src: 'assets/env/cables.jpg', thumb: 'assets/env/thumb/cables.jpg',
-      credit: { title: 'EthernetSwitch2', author: 'Raysonho @ Open Grid Scheduler / Grid Engine', site: 'Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:EthernetSwitch2.jpg', license: CC0, note: '16:9 に切り抜き' }
+      credit: {
+        title: 'EthernetSwitch2', author: 'Raysonho @ Open Grid Scheduler / Grid Engine', site: 'Wikimedia Commons',
+        url: 'https://commons.wikimedia.org/wiki/File:EthernetSwitch2.jpg', license: CC0, note: '16:9 に切り抜き'
+      }
     }
   ];
 
