@@ -22,3 +22,4 @@ export const detect = () => load('js/detect-map.js').DetectMap;
 export const envpreset = () => { load('js/blend-score.js'); return load('js/env-presets.js').EnvPreset; };
 export const cues = () => load('js/detect-cues.js').DetectCues;
 export const messages = () => load('js/messages.js').I18N_MESSAGES;
+export const envphoto = () => load('js/env-photos.js').EnvPhoto;
