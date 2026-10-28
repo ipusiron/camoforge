@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { read } from './load.js';
 
 const JS = ['js/color-utils.js', 'js/cable-plan.js', 'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/perlin.js', 'js/main.js',
+  'js/env-presets.js', 'js/env-photos.js', 'js/color-vision.js',
   ...fs.readdirSync(new URL('./', import.meta.url)).filter((f) => f.endsWith('.js')).map((f) => `test/${f}`)];
 const ALL = [...JS, 'style.css', 'index.html'];
 
@@ -17,6 +18,7 @@ test('ファイルの末尾に改行がある', () => {
 
 test('純モジュールとテストは、1行を詰め込まない（200文字まで）', () => {
   for (const f of ['js/color-utils.js', 'js/cable-plan.js', 'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js',
+    'js/env-presets.js', 'js/env-photos.js', 'js/color-vision.js',
     ...fs.readdirSync(new URL('./', import.meta.url)).filter((x) => x.endsWith('.js')).map((x) => `test/${x}`)]) {
     read(f).split('\n').forEach((line, i) => {
       assert.ok([...line].length <= 200, `${f}:${i + 1} が ${[...line].length} 文字`);

@@ -1,8 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { read } from './load.js';
+import { read, envphoto } from './load.js';
 
 const README = read('README.md');
+
+test('写真の出典（env-photos.js）が、日英の README の出典表にそろって載っている', () => {
+  const EN = read('README.en.md');
+  for (const p of envphoto().list()) {
+    const c = p.credit;
+    if (!c.url) continue; // 作者撮影
+    assert.ok(README.includes(`[${c.title}](${c.url})`), `README.md に ${c.title}`);
+    assert.ok(EN.includes(`[${c.title}](${c.url})`), `README.en.md に ${c.title}`);
+    assert.ok(README.includes(c.license.name) && EN.includes(c.license.name), c.license.name);
+  }
+});
 
 test('パターンタイプの数が6で、デジタル迷彩を含みハードウェアパネルが実装済み', () => {
   assert.ok(README.includes('**パターンタイプ**（6種類）'));

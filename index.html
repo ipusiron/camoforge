@@ -132,7 +132,11 @@
 
             <section class="panel preset-panel" id="presetPanel">
               <h3 data-i18n="env.presetTitle">環境プリセット</h3>
-              <p class="preset-hint" data-i18n="env.presetHint">作り付けの背景にパターンを当てて、同じ迷彩がどの環境でどれだけ馴染むかを比べます。背景を選ぶとプレビューに読み込みます。</p>
+              <p class="preset-hint" data-i18n="env.presetHint">各環境に、実物の写真とプログラムで描いた生成の2種類があります。同じパターンを全部に当てて、どの環境でどれだけ馴染むかを比べます。背景を選ぶとプレビューに読み込みます。</p>
+              <div class="preset-mode" role="group" aria-label="背景の種類" data-i18n-attr="aria-label:env.modeLabel">
+                <button type="button" class="preset-mode-btn active" data-mode="photo" aria-pressed="true" data-i18n="env.modePhoto">写真</button>
+                <button type="button" class="preset-mode-btn" data-mode="gen" aria-pressed="false" data-i18n="env.modeGen">生成</button>
+              </div>
               <div class="preset-list" id="presetList"></div>
               <div class="preset-compare" id="presetCompare" aria-live="polite"></div>
             </section>
@@ -380,12 +384,14 @@
   </footer>
 
   <script src="js/color-utils.js"></script>
+  <script src="js/color-vision.js"></script>
   <script src="js/perlin.js"></script>
   <script src="js/cable-plan.js"></script>
   <script src="js/blend-score.js"></script>
   <script src="js/palette-extract.js"></script>
   <script src="js/detect-map.js"></script>
   <script src="js/env-presets.js"></script>
+  <script src="js/env-photos.js"></script>
   <script src="js/detect-cues.js"></script>
   <script src="js/messages.js"></script>
   <script src="js/i18n.js"></script>

@@ -29,8 +29,16 @@ test('インラインのイベントハンドラーとinline scriptがない', (
 
 test('スクリプトを依存の順で読み込む（theme-init → color-utils → perlin → cable-plan → main）', () => {
   const order = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
-  assert.deepEqual(order, ['js/theme-init.js', 'js/color-utils.js', 'js/perlin.js', 'js/cable-plan.js',
-    'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/env-presets.js', 'js/detect-cues.js', 'js/messages.js', 'js/i18n.js', 'js/main.js']);
+  assert.deepEqual(order, ['js/theme-init.js', 'js/color-utils.js', 'js/color-vision.js', 'js/perlin.js', 'js/cable-plan.js',
+    'js/blend-score.js', 'js/palette-extract.js', 'js/detect-map.js', 'js/env-presets.js', 'js/env-photos.js', 'js/detect-cues.js',
+    'js/messages.js', 'js/i18n.js', 'js/main.js']);
+});
+
+test('環境プリセットに「写真｜生成」の切り替えがあり、押した状態を aria-pressed で伝える', () => {
+  const modes = [...html.matchAll(/<button[^>]*class="preset-mode-btn[^"]*"[^>]*>/g)].map((m) => m[0]);
+  assert.equal(modes.length, 2);
+  assert.ok(modes[0].includes('data-mode="photo"') && modes[0].includes('aria-pressed="true"'));
+  assert.ok(modes[1].includes('data-mode="gen"') && modes[1].includes('aria-pressed="false"'));
 });
 
 test('パターンタイプは6つで、ハードウェアパネルが有効', () => {
