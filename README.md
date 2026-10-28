@@ -34,7 +34,7 @@ hub: true
 
 # CamoForge - カモフラージュデザイン生成ツール
 
-**日本語** | [English](README.en.md)
+[English](README.en.md) · 日本語
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/ipusiron/camoforge?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/ipusiron/camoforge?style=social)
@@ -239,6 +239,8 @@ CamoForgeの最大の特徴は、**色覚シミュレーション機能を統合
 - **物理とサイバーの関係**：物理迷彩＝視覚的ノイズ、サイバー迷彩＝難読化・トラッキング回避
 - **ヒューマンファクター**：色覚多様性への配慮、UI設計における可読性の重要性
 - **実機デバイスにおける考察**：Raspberry Pi、USBデバイス、無線AP等での迷彩の限界と検出手法
+- **動物のカモフラージュ（自然界の擬態）**：背景一致、分断色、隠蔽的対影（カウンターシェーディング）、季節で塗り替える、擬態、止まる
+- **教育的まとめ**：人工物が残す手がかりと、視覚・センサー・通信挙動を総合して検出する必要性
 
 ---
 
@@ -507,7 +509,7 @@ camoforge/
 │   └── main.js            # メインロジック（UI制御、描画、フィルター処理）
 │
 ├── data/                   # データファイル
-│   └── presets.json       # カラープリセット定義（50種以上）
+│   └── presets.json       # カラープリセット定義（50種以上。英語名は label_en）
 │
 ├── test/                   # 自動テスト（node --test）
 │   ├── load.js            # js/*.js をテストに読み込む補助
@@ -521,9 +523,10 @@ camoforge/
 │   ├── color-vision.test.js # 色覚の変換と、画面で1回だけかけることの検証
 │   ├── theme-init.test.js # 最初の描画の前のテーマ判定の検証
 │   ├── detect-cues.test.js # 検出の手がかりの検証
+│   ├── presets.test.js    # 英語表示のプリセット名・分類名に日本語が残らないことの検証
 │   ├── messages.test.js   # 日英辞書のキー整合の検証
 │   ├── html.test.js       # index.htmlのCSP・要素の検証
-│   ├── readme.test.js     # READMEの表記の検証
+│   ├── readme.test.js     # READMEの表記と、日英の見出しの対応の検証
 │   └── format.test.js     # 改行コード・行長などの検証
 │
 ├── .github/workflows/      # GitHub Actions
@@ -538,10 +541,12 @@ camoforge/
 │   ├── screenshot3.png    # スクリーンショット3（ケーブル束）
 │   ├── screenshot4.png    # スクリーンショット4（環境適合性チェック）
 │   ├── screenshot5.png    # スクリーンショット5（環境プリセット比較）
-│   └── screenshot6.png    # スクリーンショット6（検出の手がかりの分解）
+│   ├── screenshot6.png    # スクリーンショット6（検出の手がかりの分解）
+│   └── en/                # 英語の画面のスクリーンショット（README.en.md 用）
 │
 ├── package.json            # npm testの定義（依存なし）
-├── README.md               # プロジェクト説明書
+├── README.md               # プロジェクト説明書（日本語）
+├── README.en.md            # プロジェクト説明書（英語）
 ├── CLAUDE.md               # 開発者向けドキュメント（Claude Code用）
 ├── LICENSE                 # MITライセンス
 └── .gitignore             # Git除外設定
@@ -576,7 +581,7 @@ npm test
 
 - Node.js 22以上で動く。依存パッケージはない（`node --test`）。
 - GitHub Actionsで、pushとpull requestのたびに自動で実行する。
-- 色のユーティリティ（3桁HEXの展開など）、ケーブル束の計画が同じシードで再現すること、馴染み度の評価、環境画像からの色抽出、目立つ場所のヒートマップ、環境プリセットの生成（解像度を変えても同じ絵になること）と馴染み度比較、写真の実在・大きさ・EXIFなし・出典、色覚の変換と画面で1回だけかけること、検出の手がかりの分解（輪郭・光沢・直線・色）、テーマの判定、日英辞書のキー整合、index.htmlのCSPと要素、READMEの表記を検証する。
+- 色のユーティリティ（3桁HEXの展開など）、ケーブル束の計画が同じシードで再現すること、馴染み度の評価、環境画像からの色抽出、目立つ場所のヒートマップ、環境プリセットの生成（解像度を変えても同じ絵になること）と馴染み度比較、写真の実在・大きさ・EXIFなし・出典、色覚の変換と画面で1回だけかけること、検出の手がかりの分解（輪郭・光沢・直線・色）、テーマの判定、英語表示に日本語が残らないこと（プリセット名・辞書・index.html）、日英辞書のキー整合、index.htmlのCSPと要素、READMEの表記と日英の見出しの対応を検証する。
 - 画面の描画やタブ操作はPlaywrightで確かめた（確認用のスクリプトはリポジトリーに含めない）。
 
 ---

@@ -96,7 +96,8 @@ Lightweight 2D Perlin noise implementation. Uses deterministic shuffle seeded by
   - `hardware_panels` - Industrial panel colors, gunmetal, brushed steel
   - `office_backgrounds` - Wall/ceiling/desk colors, wood tones
   - `black_matte` - Pure black variants for matte texture
-- Loaded via `fetch()` at js/main.js:933, dynamically populates dropdown
+- Loaded via `fetch()` in `setupPresetPaletteSelector` (js/main.js), dynamically populates dropdown
+- Each preset has `label` (Japanese UI) and, when `label` contains Japanese, `label_en` (English UI). Category names come from the dictionary keys `presetGroup.<category>` in js/messages.js. `updatePaletteOptions(true)` rebuilds the options on a language change and keeps the selection. `test/presets.test.js` fails if Japanese would show in English
 - Pattern type → preset category mapping defined in `PATTERN_PRESETS` (js/main.js:53-59)
 
 ### Canvas Flow
@@ -137,7 +138,11 @@ This tool is for **education only**. It demonstrates:
 
 ### Palette Presets Loading
 
-The preset loader (js/main.js:921-972) expects `data/presets.json` at `./data/presets.json` (relative to HTML). If moving files, update the fetch path at js/main.js:933.
+The preset loader (`setupPresetPaletteSelector` in js/main.js) expects `data/presets.json` at `./data/presets.json` (relative to HTML). If moving files, update its fetch path.
+
+### README
+
+`README.en.md` is a full translation of `README.md` with the same headings (count, order, level, leading emoji), checked by `test/readme.test.js`. English screenshots live in `assets/en/` and are taken with `impl/shots/day085_shots_en.py` in the ipusiron-work repository (outside this repo). Update both READMEs together.
 
 ### Canvas Export
 

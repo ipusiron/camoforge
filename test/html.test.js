@@ -101,3 +101,9 @@ test('言語切替（日英）のUIと辞書の読み込みがある（第6弾�
   assert.ok(html.includes('data-i18n="tab.generate"'));
   assert.ok(html.includes('data-i18n-html="edu.animalList"'));
 });
+
+test('index.html の属性と地の文に、辞書を通らない日本語を残さない（比較スライダー・フッター）', () => {
+  const html = read('index.html');
+  assert.ok(/aria-label="比較スライダー" data-i18n-attr="aria-label:env.sliderLabel"/.test(html), 'スライダーの aria-label を辞書から引く');
+  assert.ok(/<span data-i18n-html="footer.repo">[^<]*（ <a [^>]+>ipusiron\/camoforge<\/a> ）<\/span>/.test(html), 'フッターの丸括弧ごと辞書から引く');
+});

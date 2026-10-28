@@ -34,3 +34,9 @@ test('HTMLを入れるキーは日英で同じ数のタグを持つ（<li>・<st
     assert.equal(countJa, countEn, `${k} の <li> の数が日英で違う`);
   }
 });
+
+test('英語の辞書に日本語が残らない（日本語へ切り替えるボタンの文言だけは日本語）', () => {
+  const JA = /[　-ヿ一-鿿＀-￯]/;
+  const hits = Object.entries(M.en).filter(([, v]) => JA.test(v)).map(([k]) => k);
+  assert.deepEqual(hits.filter((k) => !/^lang\./.test(k)), [], `日本語を含む英語の値: ${hits}`);
+});
