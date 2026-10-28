@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
       swatch.setAttribute('data-color', color);
       swatch.setAttribute('data-index', index);
       swatch.style.cursor = 'pointer';
-      swatch.title = `${color} をクリックして変更`;
+      swatch.title = T('gen.swatchTitle').replace('{color}', color);
 
       // クリックでカラーピッカーを表示
       swatch.addEventListener('click', () => {
@@ -423,27 +423,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== Update palette preset options based on pattern type =====
-  function updatePaletteOptions(){
+  // keepSelection: 言語の切り替えで作り直すときは、選択中のプリセットを保つ
+  function updatePaletteOptions(keepSelection){
     const patternType = patternTypeEl.value;
     const categories = PATTERN_PRESETS[patternType] || [];
+    const selected = palettePresetEl.value;
+    const en = curLang() === 'en';
 
-    // Clear current options except the first "カスタム入力"
-    palettePresetEl.innerHTML = '<option value="">--- カスタム入力 ---</option>';
+    // 先頭の「カスタム入力」から作り直す
+    palettePresetEl.textContent = '';
+    const customOpt = document.createElement('option');
+    customOpt.value = '';
+    customOpt.textContent = T('opt.customInput');
+    palettePresetEl.appendChild(customOpt);
 
     // Add relevant category presets
     categories.forEach(catKey => {
       if(allPresets[catKey]){
         const group = document.createElement('optgroup');
-        group.label = allPresets[catKey].label;
+        group.label = T('presetGroup.' + catKey);
         allPresets[catKey].items.forEach(item => {
           const opt = document.createElement('option');
           opt.value = item.value;
-          opt.textContent = item.label;
+          opt.textContent = en ? item.labelEn : item.label;
           group.appendChild(opt);
         });
         palettePresetEl.appendChild(group);
       }
     });
+    if(keepSelection) palettePresetEl.value = selected;
   }
 
   // ===== Core draw =====
@@ -1300,17 +1308,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ===== Preset palette loader (Japanese category labels) =====
+  // ===== Preset palette loader（分類名は辞書の presetGroup.*、英語の名前は label_en） =====
   (function setupPresetPaletteSelector(){
-    const JP_LABELS = {
-      cable_bundles: 'ケーブル群',
-      hardware_panels: 'ハードウェア・パネル',
-      office_backgrounds: 'オフィス背景',
-      military_camouflage: '軍用迷彩',
-      digital_camouflage: 'デジタル迷彩',
-      black_matte: '漆黒マット'
-    };
-
     // JSONロード
     fetch('data/presets.json')
       .then(res => {
@@ -1323,10 +1322,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Store all presets by category
         Object.keys(categories).forEach(catKey => {
           allPresets[catKey] = {
-            label: JP_LABELS[catKey] || catKey,
             items: categories[catKey].map(p => ({
               value: (p.colors || []).join(','),
-              label: p.label || p.id || '(unnamed)'
+              label: p.label || p.id || '(unnamed)',
+              labelEn: p.label_en || p.label || p.id || '(unnamed)'
             }))
           };
         });
@@ -1338,7 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('presets.json 読み込み失敗:', err);
         const errOpt = document.createElement('option');
         errOpt.disabled = true;
-        errOpt.textContent = '（プリセット読み込み失敗）';
+        errOpt.textContent = T('opt.presetLoadError');
         palettePresetEl.appendChild(errOpt);
       });
 
@@ -1664,7 +1663,7 @@ document.addEventListener('DOMContentLoaded', () => {
       else updatePresetCompare();
     });
   }
-  if(window.I18N){ window.I18N.onChange(() => { buildPresetButtons(); draw(); }); }
+  if(window.I18N){ window.I18N.onChange(() => { updatePaletteOptions(true); updatePalettePreview(); buildPresetButtons(); draw(); }); }
   draw();
 
   // Load default background image（写真・森の小道）

@@ -161,101 +161,121 @@
       {
         "id": "woodland_bdu",
         "label": "Woodland BDU (米軍森林)",
+        "label_en": "Woodland BDU (US forest)",
         "colors": ["#3d4a2c", "#5a6c3a", "#6b4423", "#2c3d1f"]
       },
       {
         "id": "marpat_woodland",
         "label": "MARPAT Woodland (海兵隊森林)",
+        "label_en": "MARPAT Woodland (USMC forest)",
         "colors": ["#4a5438", "#6b5d3f", "#2d3a24", "#5c6847"]
       },
       {
         "id": "marpat_desert",
         "label": "MARPAT Desert (海兵隊砂漠)",
+        "label_en": "MARPAT Desert (USMC desert)",
         "colors": ["#c9b896", "#a89674", "#8c7960", "#d4c5a4"]
       },
       {
         "id": "multicam",
         "label": "MultiCam (全地形)",
+        "label_en": "MultiCam (all-terrain)",
         "colors": ["#7d7254", "#5d5940", "#9c8b6a", "#4a4332"]
       },
       {
         "id": "ucp_acu",
         "label": "UCP/ACU (米陸軍都市)",
+        "label_en": "UCP/ACU (US Army urban)",
         "colors": ["#8a8e84", "#a3a79a", "#7d8177", "#6b6f67"]
       },
       {
         "id": "ocp_scorpion",
         "label": "OCP/Scorpion W2 (米陸軍新型)",
+        "label_en": "OCP/Scorpion W2 (US Army current)",
         "colors": ["#7a7052", "#9b8968", "#5c5641", "#b4a684"]
       },
       {
         "id": "dpm_british",
         "label": "DPM (英軍森林)",
+        "label_en": "DPM (British forest)",
         "colors": ["#4d5e38", "#3a4528", "#6b5a3d", "#2c3520"]
       },
       {
         "id": "ddpm_desert",
         "label": "DDPM (英軍砂漠)",
+        "label_en": "DDPM (British desert)",
         "colors": ["#c8b69a", "#a89578", "#8a755f", "#d9cbb1"]
       },
       {
         "id": "flecktarn",
         "label": "Flecktarn (独軍森林)",
+        "label_en": "Flecktarn (German forest)",
         "colors": ["#4a5c3a", "#3d4d2f", "#6d5843", "#7a8a5c"]
       },
       {
         "id": "tropentarn",
         "label": "Tropentarn (独軍砂漠)",
+        "label_en": "Tropentarn (German desert)",
         "colors": ["#c4a982", "#a38b68", "#8a7157", "#d8c19f"]
       },
       {
         "id": "flora_russian",
         "label": "Flora (露軍森林)",
+        "label_en": "Flora (Russian forest)",
         "colors": ["#4e5d3c", "#3a4a2c", "#6a5a40", "#2e3d25"]
       },
       {
         "id": "surpat_desert",
         "label": "SURPAT Desert (露軍砂漠)",
+        "label_en": "SURPAT Desert (Russian desert)",
         "colors": ["#c7b095", "#b59f7d", "#9a8467", "#d9c8a8"]
       },
       {
         "id": "jgsdf_type1",
         "label": "陸上自衛隊 1型 (森林)",
+        "label_en": "JGSDF Type 1 (forest)",
         "colors": ["#4d5e3d", "#3c4d2e", "#6a5b42", "#2d3c24"]
       },
       {
         "id": "jgsdf_type2_desert",
         "label": "陸上自衛隊 2型 (砂漠)",
+        "label_en": "JGSDF Type 2 (desert)",
         "colors": ["#c5aa87", "#ab936f", "#8f7a5d", "#d6c29c"]
       },
       {
         "id": "cadpat_woodland",
         "label": "CADPAT Woodland (加軍森林)",
+        "label_en": "CADPAT Woodland (Canadian forest)",
         "colors": ["#3f5031", "#2d3d24", "#5a6944", "#4e5e3a"]
       },
       {
         "id": "cadpat_arid",
         "label": "CADPAT Arid (加軍砂漠)",
+        "label_en": "CADPAT Arid (Canadian desert)",
         "colors": ["#c3a889", "#a89270", "#8d7a5e", "#d4bb9b"]
       },
       {
         "id": "urban_gray",
         "label": "Urban Gray (都市迷彩)",
+        "label_en": "Urban Gray (urban camo)",
         "colors": ["#6d7278", "#8a8e94", "#5c6168", "#4d5157"]
       },
       {
         "id": "digital_navy_nwu",
         "label": "NWU Type I (米海軍デジタル)",
+        "label_en": "NWU Type I (US Navy digital)",
         "colors": ["#455963", "#5c6d78", "#3a4a54", "#6b7c87"]
       },
       {
         "id": "tigerstripe",
         "label": "Tigerstripe (ベトナム戦)",
+        "label_en": "Tigerstripe (Vietnam War)",
         "colors": ["#4a5a3c", "#3c4d2e", "#2d3d22", "#5d6d48"]
       },
       {
         "id": "desert_6color",
         "label": "Desert 6-Color (湾岸戦)",
+        "label_en": "Desert 6-Color (Gulf War)",
         "colors": ["#c9b596", "#a89576", "#d8c8a8", "#8e7a60", "#b9a585", "#7a6852"]
       }
     ],
@@ -263,61 +283,73 @@
       {
         "id": "marpat_woodland_digital",
         "label": "MARPAT Woodland (米海兵隊・森林)",
+        "label_en": "MARPAT Woodland (USMC, forest)",
         "colors": ["#2E2C35", "#896E60", "#95837A", "#4E5B51"]
       },
       {
         "id": "marpat_desert_digital",
         "label": "MARPAT Desert (米海兵隊・砂漠)",
+        "label_en": "MARPAT Desert (USMC, desert)",
         "colors": ["#63432A", "#7B6243", "#9FA090", "#8B8974"]
       },
       {
         "id": "ucp_acu_digital",
         "label": "UCP/ACU (米陸軍・都市型)",
+        "label_en": "UCP/ACU (US Army, urban)",
         "colors": ["#737369", "#53544C", "#BAAB93"]
       },
       {
         "id": "nwu_type1_digital",
         "label": "NWU Type I Blueberries (米海軍・海洋)",
+        "label_en": "NWU Type I Blueberries (US Navy, maritime)",
         "colors": ["#B2B4CB", "#515A6B", "#27395F", "#322F42"]
       },
       {
         "id": "aor1_digital",
         "label": "AOR1 / NWU Type II (米海軍・砂漠)",
+        "label_en": "AOR1 / NWU Type II (US Navy, desert)",
         "colors": ["#5a3a22", "#6e5638", "#8a7e6e", "#7a786a"]
       },
       {
         "id": "aor2_digital",
         "label": "AOR2 / NWU Type III (米海軍・森林)",
+        "label_en": "AOR2 / NWU Type III (US Navy, forest)",
         "colors": ["#252228", "#7a5e52", "#847668", "#465045"]
       },
       {
         "id": "cadpat_tw_digital",
         "label": "CADPAT TW (カナダ軍・森林)",
+        "label_en": "CADPAT TW (Canadian Armed Forces, forest)",
         "colors": ["#142513", "#69562c", "#395018", "#5e8528"]
       },
       {
         "id": "cadpat_arid_digital",
         "label": "CADPAT AR (カナダ軍・砂漠)",
+        "label_en": "CADPAT AR (Canadian Armed Forces, desert)",
         "colors": ["#C9B896", "#A89576", "#8E7A60", "#B9A585"]
       },
       {
         "id": "pla_type07_universal",
         "label": "Type 07 Universal (中国人民解放軍・汎用)",
+        "label_en": "Type 07 Universal (PLA, universal)",
         "colors": ["#7a7d75", "#5a6a4a", "#4a3f2a", "#2a2a2a"]
       },
       {
         "id": "pla_type07_desert",
         "label": "Type 07 Desert (中国人民解放軍・砂漠)",
+        "label_en": "Type 07 Desert (PLA, desert)",
         "colors": ["#d4c5a0", "#a89070", "#6e5540", "#4a3020"]
       },
       {
         "id": "pla_type07_woodland",
         "label": "Type 07 Woodland (中国人民解放軍・森林)",
+        "label_en": "Type 07 Woodland (PLA, forest)",
         "colors": ["#5e6e3e", "#8a9a5a", "#4a3820", "#2a2a1a"]
       },
       {
         "id": "pla_type07_urban",
         "label": "Type 07 Urban (中国人民解放軍・都市)",
+        "label_en": "Type 07 Urban (PLA, urban)",
         "colors": ["#6a7078", "#505860", "#4a5a52", "#3a4248"]
       }
     ],
@@ -325,31 +357,37 @@
       {
         "id": "matte_pure_black",
         "label": "Pure Black (純黒)",
+        "label_en": "Pure Black",
         "colors": ["#000000"]
       },
       {
         "id": "matte_charcoal",
         "label": "Charcoal (炭色)",
+        "label_en": "Charcoal",
         "colors": ["#0b0b0b"]
       },
       {
         "id": "matte_graphite",
         "label": "Graphite (黒鉛)",
+        "label_en": "Graphite",
         "colors": ["#101010"]
       },
       {
         "id": "matte_dark_gray",
         "label": "Dark Gray (暗灰色)",
+        "label_en": "Dark Gray",
         "colors": ["#1a1a1a"]
       },
       {
         "id": "matte_gunmetal",
         "label": "Gunmetal (銃鉄色)",
+        "label_en": "Gunmetal",
         "colors": ["#0f1113"]
       },
       {
         "id": "matte_anthracite",
         "label": "Anthracite (無煙炭)",
+        "label_en": "Anthracite",
         "colors": ["#111214"]
       }
     ]
