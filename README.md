@@ -301,6 +301,8 @@ CamoForgeはその違いを体感的に学ぶための教育ツールで、次�
 
 これらはセキュリティ・デザインの両面にまたがる論点です。
 
+目が物を見つける手がかり（1つだけ違う特徴が目に入る、縁が途切れても輪郭をつないで見る、左右対称な模様は見つかりやすい）は、[Day128 Vision Trap Atlas](https://ipusiron.github.io/vision-trap-atlas/)の[違いの種類と大きさ](https://ipusiron.github.io/vision-trap-atlas/#popout-feature)・[輪郭](https://ipusiron.github.io/vision-trap-atlas/#gestalt-contour)・[左右対称と外へのふくらみ](https://ipusiron.github.io/vision-trap-atlas/#figure-ground-symmetry)の項目で、つまみを動かして確かめられます。
+
 ---
 
 ## 🖥️ 実機のカモフラージュについての考察

@@ -267,6 +267,8 @@ CamoForge is an educational tool for learning that difference by experience, and
 
 These issues span both security and design.
 
+The cues the eye uses to find an object (one different feature catches the eye, a broken edge is still joined into an outline, and a symmetric pattern is easy to spot) can be checked by moving the controls in the [Kind and size of the difference](https://ipusiron.github.io/vision-trap-atlas/#popout-feature), [Contours](https://ipusiron.github.io/vision-trap-atlas/#gestalt-contour) and [Symmetry and convexity](https://ipusiron.github.io/vision-trap-atlas/#figure-ground-symmetry) items of [Day128 Vision Trap Atlas](https://ipusiron.github.io/vision-trap-atlas/).
+
 ---
 
 ## 🖥️ Observations on camouflaging real devices
